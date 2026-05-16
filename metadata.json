@@ -1,0 +1,8 @@
+{
+  "name": "El Gran Viaje del Sol",
+  "description": "Una Exploración Narrativa por los Climas de la Tierra",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
