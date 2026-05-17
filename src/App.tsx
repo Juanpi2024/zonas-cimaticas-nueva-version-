@@ -2238,8 +2238,483 @@ const ClimaticMapPainter = () => {
   );
 };
 
+// --- Climatic Crossword Game ---
+// [Crucigrama interactivo de Juanpi]
+// Integración del skill "puzzle-activity-planner" adaptado para niños de 3° Básico
+
+const ClimaticCrosswordGame = () => {
+  const WORDS = [
+    {
+      id: "ecuador",
+      number: 1,
+      word: "ECUADOR",
+      clue: "Línea imaginaria cálida que divide la Tierra en dos hemisferios y recibe los rayos del Sol directamente.",
+      direction: "horizontal",
+      row: 3,
+      col: 1,
+    },
+    {
+      id: "oasis",
+      number: 2,
+      word: "OASIS",
+      clue: "Lugar húmedo con agua y vegetación que interrumpe la aridez de los desiertos.",
+      direction: "horizontal",
+      row: 6,
+      col: 2,
+    },
+    {
+      id: "calor",
+      number: 3,
+      word: "CALOR",
+      clue: "Sensación térmica alta y característica constante de la Zona Cálida.",
+      direction: "vertical",
+      row: 3,
+      col: 2,
+    },
+    {
+      id: "desierto",
+      number: 4,
+      word: "DESIERTO",
+      clue: "Paisaje extremadamente seco de la Zona Cálida donde llueve muy poco y destacan los cactus.",
+      direction: "vertical",
+      row: 3,
+      col: 5,
+    },
+    {
+      id: "polos",
+      number: 5,
+      word: "POLOS",
+      clue: "Extremos helados norte y sur del planeta donde se ubican las Zonas Frías.",
+      direction: "vertical",
+      row: 2,
+      col: 6,
+    },
+  ];
+
+  const GRID_SIZE = 11;
+
+  // Pre-calculate cells map
+  const gridData: { [key: string]: { letter: string; numberBadge: number | null; wordIds: string[] } } = {};
+  
+  WORDS.forEach((w) => {
+    for (let i = 0; i < w.word.length; i++) {
+      const r = w.direction === "horizontal" ? w.row : w.row + i;
+      const c = w.direction === "horizontal" ? w.col + i : w.col;
+      const key = `${r}-${c}`;
+      
+      if (!gridData[key]) {
+        gridData[key] = { letter: w.word[i], numberBadge: null, wordIds: [] };
+      }
+      gridData[key].wordIds.push(w.id);
+      
+      if (i === 0) {
+        gridData[key].numberBadge = w.number;
+      }
+    }
+  });
+
+  const [inputs, setInputs] = useState<{ [key: string]: string }>({});
+  const [selectedCell, setSelectedCell] = useState<{ r: number; c: number } | null>(null);
+  const [activeWordId, setActiveWordId] = useState<string | null>(null);
+  const [showVictory, setShowVictory] = useState(false);
+  const [validationResult, setValidationResult] = useState<{ checked: boolean; correct: boolean; errors: string[] }>({
+    checked: false,
+    correct: false,
+    errors: [],
+  });
+
+  const focusCell = (r: number, c: number) => {
+    const el = document.getElementById(`cell-${r}-${c}`);
+    if (el) {
+      (el as HTMLInputElement).focus();
+      (el as HTMLInputElement).select();
+    }
+  };
+
+  const handleCellFocus = (r: number, c: number) => {
+    setSelectedCell({ r, c });
+    const key = `${r}-${c}`;
+    const cell = gridData[key];
+    if (cell && cell.wordIds.length > 0) {
+      if (activeWordId && cell.wordIds.includes(activeWordId)) {
+        // Do nothing
+      } else {
+        setActiveWordId(cell.wordIds[0]);
+      }
+    }
+  };
+
+  const handleCellChange = (r: number, c: number, value: string) => {
+    const char = value.toUpperCase().slice(-1);
+    if (!/^[A-ZÑ]$/.test(char) && char !== "") return;
+    
+    const key = `${r}-${c}`;
+    setInputs(prev => ({ ...prev, [key]: char }));
+    
+    if (validationResult.checked) {
+      setValidationResult({ checked: false, correct: false, errors: [] });
+    }
+
+    if (char !== "" && activeWordId) {
+      const activeWord = WORDS.find(w => w.id === activeWordId);
+      if (activeWord) {
+        const idx = activeWord.direction === "horizontal" 
+          ? c - activeWord.col 
+          : r - activeWord.row;
+        if (idx < activeWord.word.length - 1) {
+          const nextR = activeWord.direction === "horizontal" ? r : r + 1;
+          const nextC = activeWord.direction === "horizontal" ? c + 1 : c;
+          setTimeout(() => focusCell(nextR, nextC), 10);
+        }
+      }
+    }
+  };
+
+  const handleKeyDown = (r: number, c: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace") {
+      const key = `${r}-${c}`;
+      if (!inputs[key] && activeWordId) {
+        const activeWord = WORDS.find(w => w.id === activeWordId);
+        if (activeWord) {
+          const idx = activeWord.direction === "horizontal" 
+            ? c - activeWord.col 
+            : r - activeWord.row;
+          if (idx > 0) {
+            const prevR = activeWord.direction === "horizontal" ? r : r - 1;
+            const prevC = activeWord.direction === "horizontal" ? c - 1 : c;
+            focusCell(prevR, prevC);
+          }
+        }
+      }
+    } else if (e.key === "ArrowUp") {
+      if (r > 0 && gridData[`${r-1}-${c}`]) focusCell(r-1, c);
+    } else if (e.key === "ArrowDown") {
+      if (r < GRID_SIZE - 1 && gridData[`${r+1}-${c}`]) focusCell(r+1, c);
+    } else if (e.key === "ArrowLeft") {
+      if (c > 0 && gridData[`${r}-${c-1}`]) focusCell(r, c-1);
+    } else if (e.key === "ArrowRight") {
+      if (c < GRID_SIZE - 1 && gridData[`${r}-${c+1}`]) focusCell(r, c+1);
+    }
+  };
+
+  const handleClueClick = (w: typeof WORDS[0]) => {
+    setActiveWordId(w.id);
+    focusCell(w.row, w.col);
+  };
+
+  const validateCrossword = () => {
+    let allCorrect = true;
+    const errors: string[] = [];
+
+    Object.keys(gridData).forEach((key) => {
+      const cell = gridData[key];
+      const userInput = (inputs[key] || "").trim().toUpperCase();
+      if (userInput !== cell.letter) {
+        allCorrect = false;
+      }
+    });
+
+    WORDS.forEach((w) => {
+      let wordComplete = true;
+      for (let i = 0; i < w.word.length; i++) {
+        const r = w.direction === "horizontal" ? w.row : w.row + i;
+        const c = w.direction === "horizontal" ? w.col + i : w.col;
+        const key = `${r}-${c}`;
+        const val = (inputs[key] || "").trim().toUpperCase();
+        if (val !== w.word[i]) {
+          wordComplete = false;
+        }
+      }
+      if (!wordComplete) {
+        errors.push(`La palabra vertical/horizontal Nº ${w.number} aún tiene letras incorrectas o vacías.`);
+      }
+    });
+
+    setValidationResult({
+      checked: true,
+      correct: allCorrect,
+      errors,
+    });
+
+    if (allCorrect) {
+      setShowVictory(true);
+    }
+  };
+
+  const autoSolve = () => {
+    const solvedInputs: { [key: string]: string } = {};
+    Object.keys(gridData).forEach((key) => {
+      solvedInputs[key] = gridData[key].letter;
+    });
+    setInputs(solvedInputs);
+    setValidationResult({ checked: false, correct: false, errors: [] });
+  };
+
+  const resetGame = () => {
+    setInputs({});
+    setValidationResult({ checked: false, correct: false, errors: [] });
+    setActiveWordId(null);
+    setSelectedCell(null);
+  };
+
+  return (
+    <div className="bg-white rounded-[32px] p-8 shadow-2xl border border-gray-100 max-w-5xl mx-auto my-8 text-left">
+      <div className="bg-purple-50 rounded-2xl p-6 border border-purple-100 mb-8 flex flex-col md:flex-row gap-6 items-center">
+        <div className="bg-purple-100 text-purple-600 w-16 h-16 rounded-full flex items-center justify-center shrink-0 text-3xl shadow-sm border border-purple-200">
+          🧩
+        </div>
+        <div>
+          <h3 className="text-xl font-serif font-black text-purple-950 mb-1">
+            El Súper Crucigrama de Juanpi
+          </h3>
+          <p className="text-sm text-purple-900/80 font-light leading-relaxed">
+            Completa las 5 palabras clave de las Zonas Climáticas. Haz clic en las pistas o en las celdas directamente, escribe con tu teclado y ¡pon a prueba tus conocimientos de geógrafo!
+          </p>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-12 gap-8 items-start">
+        <div className="lg:col-span-7 flex flex-col items-center">
+          <div className="bg-gray-100 p-4 md:p-6 rounded-[2.5rem] border-4 border-gray-200 shadow-inner max-w-full overflow-auto">
+            <div 
+              className="grid grid-cols-11 gap-1 md:gap-1.5 w-[330px] h-[330px] md:w-[440px] md:h-[440px]"
+              style={{ userSelect: "none" }}
+            >
+              {Array.from({ length: GRID_SIZE }).map((_, r) => (
+                Array.from({ length: GRID_SIZE }).map((_, c) => {
+                  const key = `${r}-${c}`;
+                  const cell = gridData[key];
+                  const hasLetter = !!cell;
+                  
+                  if (!hasLetter) {
+                    return (
+                      <div 
+                        key={key} 
+                        className="bg-gray-900/90 rounded-md border border-gray-950/20 shadow-sm"
+                      />
+                    );
+                  }
+
+                  const isSelected = selectedCell?.r === r && selectedCell?.c === c;
+                  const isInActiveWord = activeWordId && cell.wordIds.includes(activeWordId);
+                  const isWrong = validationResult.checked && inputs[key] && inputs[key] !== cell.letter;
+
+                  return (
+                    <div 
+                      key={key} 
+                      className={`relative aspect-square flex items-center justify-center rounded-xl font-black text-base md:text-xl transition-all cursor-pointer shadow-md ${
+                        isSelected 
+                          ? "ring-4 ring-purple-600 bg-purple-50 shadow-purple-200/50 scale-105 z-10" 
+                          : isInActiveWord 
+                          ? "bg-yellow-100 border-2 border-yellow-400 text-yellow-950" 
+                          : isWrong
+                          ? "bg-red-50 border-2 border-red-500 text-red-700 animate-pulse"
+                          : "bg-white border border-gray-200 hover:border-purple-300 text-gray-950"
+                      }`}
+                      onClick={() => focusCell(r, c)}
+                    >
+                      {cell.numberBadge !== null && (
+                        <span className="absolute top-0.5 left-0.5 text-[8px] md:text-[10px] font-black text-gray-500">
+                          {cell.numberBadge}
+                        </span>
+                      )}
+
+                      <input
+                        id={`cell-${r}-${c}`}
+                        type="text"
+                        maxLength={1}
+                        value={inputs[key] || ""}
+                        onChange={(e) => handleCellChange(r, c, e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(r, c, e)}
+                        onFocus={() => handleCellFocus(r, c)}
+                        className="w-full h-full text-center bg-transparent border-none outline-none focus:ring-0 uppercase p-0 font-extrabold select-all cursor-pointer"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="off"
+                        spellCheck="false"
+                      />
+                    </div>
+                  );
+                })
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2 justify-center mt-6 w-full max-w-md">
+            <button
+              onClick={validateCrossword}
+              className="flex-1 py-3 px-4 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-extrabold rounded-2xl text-xs transition-all shadow-md cursor-pointer flex items-center justify-center gap-1"
+            >
+              🔍 Comprobar Respuestas
+            </button>
+            <button
+              onClick={autoSolve}
+              className="py-3 px-4 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-extrabold rounded-2xl text-xs transition-all shadow-md cursor-pointer flex items-center justify-center gap-1"
+            >
+              💡 Auto-Resolver
+            </button>
+            <button
+              onClick={resetGame}
+              className="py-3 px-4 bg-gray-200 hover:bg-gray-300 active:scale-95 text-gray-700 font-extrabold rounded-2xl text-xs transition-all shadow-md cursor-pointer flex items-center justify-center gap-1"
+            >
+              🔄 Reiniciar
+            </button>
+          </div>
+
+          {validationResult.checked && (
+            <div className="w-full max-w-md mt-6">
+              {validationResult.correct ? (
+                <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl text-xs font-bold text-center">
+                  🎉 ¡Excelente! Has resuelto todo el crucigrama perfectamente.
+                </div>
+              ) : (
+                <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-2xl text-xs font-bold text-left space-y-1">
+                  <div className="font-extrabold">✏️ Aún hay errores por corregir:</div>
+                  {validationResult.errors.slice(0, 3).map((err, i) => (
+                    <div key={i} className="font-light">• {err}</div>
+                  ))}
+                  {validationResult.errors.length > 3 && (
+                    <div className="font-light">• ¡Y algunos errores más! Sigue intentando.</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="lg:col-span-5 space-y-6">
+          <div className="bg-purple-50/50 rounded-2xl p-6 border border-purple-100/50">
+            <h4 className="text-lg font-serif font-black text-purple-900 mb-4 flex items-center gap-2">
+              <span className="text-xl">➡️</span> Pistas Horizontales
+            </h4>
+            <div className="space-y-4">
+              {WORDS.filter(w => w.direction === "horizontal").map((w) => {
+                const isActive = activeWordId === w.id;
+                return (
+                  <div 
+                    key={w.id} 
+                    onClick={() => handleClueClick(w)}
+                    className={`p-4 rounded-xl border text-left cursor-pointer transition-all ${
+                      isActive 
+                        ? "bg-purple-600 border-purple-700 text-white shadow-md scale-102" 
+                        : "bg-white border-gray-100 text-gray-700 hover:bg-purple-50 hover:border-purple-200"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
+                        isActive ? "bg-white text-purple-700" : "bg-purple-100 text-purple-800"
+                      }`}>
+                        {w.number}
+                      </span>
+                      <span className="text-xs font-bold uppercase tracking-wider">
+                        {w.word.length} letras
+                      </span>
+                    </div>
+                    <p className={`text-xs md:text-sm font-light leading-relaxed ${isActive ? "text-purple-50" : "text-gray-600"}`}>
+                      {w.clue}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100/50">
+            <h4 className="text-lg font-serif font-black text-blue-900 mb-4 flex items-center gap-2">
+              <span className="text-xl">⬇️</span> Pistas Verticales
+            </h4>
+            <div className="space-y-4">
+              {WORDS.filter(w => w.direction === "vertical").map((w) => {
+                const isActive = activeWordId === w.id;
+                return (
+                  <div 
+                    key={w.id} 
+                    onClick={() => handleClueClick(w)}
+                    className={`p-4 rounded-xl border text-left cursor-pointer transition-all ${
+                      isActive 
+                        ? "bg-blue-600 border-blue-700 text-white shadow-md scale-102" 
+                        : "bg-white border-gray-100 text-gray-700 hover:bg-blue-50 hover:border-blue-200"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
+                        isActive ? "bg-white text-blue-700" : "bg-blue-100 text-blue-800"
+                      }`}>
+                        {w.number}
+                      </span>
+                      <span className="text-xs font-bold uppercase tracking-wider">
+                        {w.word.length} letras
+                      </span>
+                    </div>
+                    <p className={`text-xs md:text-sm font-light leading-relaxed ${isActive ? "text-blue-50" : "text-gray-600"}`}>
+                      {w.clue}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {showVictory && (
+          <motion.div 
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="bg-white max-w-xl w-full rounded-[40px] p-8 md:p-12 text-center shadow-2xl relative border-8 border-purple-500/20 overflow-hidden"
+              initial={{ scale: 0.9, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 50 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-purple-200/40 via-transparent to-transparent pointer-events-none" />
+              
+              <div className="text-7xl mb-6 animate-bounce">🏆🧩</div>
+              
+              <span className="bg-purple-100 text-purple-800 text-xs font-black uppercase px-4 py-1.5 rounded-full tracking-widest inline-block mb-4">
+                Misión Completada
+              </span>
+              
+              <h3 className="text-4xl md:text-5xl font-serif font-black text-gray-900 leading-tight mb-4">
+                ¡Felicidades, Súper Crucigramista Juanpi!
+              </h3>
+              
+              <p className="text-gray-600 font-light leading-relaxed mb-8 text-sm md:text-base">
+                Has descifrado todas las palabras clave sobre las zonas climáticas de nuestro planeta. ¡Tu bitácora científica ahora brilla más que nunca!
+              </p>
+
+              <div className="bg-purple-50 rounded-3xl p-6 border border-purple-100 text-left mb-8">
+                <h4 className="font-extrabold text-purple-950 text-sm mb-3">Bitácora de Palabras Descubiertas:</h4>
+                <div className="grid grid-cols-2 gap-2 text-xs font-bold text-purple-800">
+                  <div>📍 1. ECUADOR</div>
+                  <div>🌴 2. OASIS</div>
+                  <div>🔥 3. CALOR</div>
+                  <div>🌵 4. DESIERTO</div>
+                  <div>❄️ 5. POLOS</div>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setShowVictory(false)}
+                className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-3xl transition-all active:scale-95 cursor-pointer shadow-lg shadow-purple-500/20"
+              >
+                Continuar Explorando 🧭
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const ExplorerGamesHub = () => {
-  const [activeTab, setActiveTab] = useState<"board" | "memorize" | "dressup" | "paint">("board");
+  const [activeTab, setActiveTab] = useState<"board" | "memorize" | "dressup" | "paint" | "puzzle">("board");
 
   return (
     <div id="juegos" className="my-24 max-w-6xl mx-auto px-6 md:px-12 scroll-mt-20">
@@ -2251,11 +2726,11 @@ const ExplorerGamesHub = () => {
           Academia de Súper Exploradores
         </h2>
         <p className="text-gray-600 font-light max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
-          ¡Aprende y pon a prueba tu ingenio! Elige entre cuatro misiones interactivas diseñadas especialmente para desafiar tus conocimientos geográficos.
+          ¡Aprende y pon a prueba tu ingenio! Elige entre cinco misiones interactivas diseñadas especialmente para desafiar tus conocimientos geográficos.
         </p>
 
         {/* Tab Selector */}
-        <div className="flex justify-center gap-4 mt-8 bg-white p-2 rounded-2xl border border-gray-200 max-w-xl mx-auto shadow-sm">
+        <div className="flex justify-center gap-4 mt-8 bg-white p-2 rounded-2xl border border-gray-200 max-w-4xl mx-auto shadow-sm overflow-x-auto whitespace-nowrap">
           <button
             onClick={() => setActiveTab("board")}
             className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
@@ -2296,6 +2771,16 @@ const ExplorerGamesHub = () => {
           >
             🗺️ Pintar Mapa
           </button>
+          <button
+            onClick={() => setActiveTab("puzzle")}
+            className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
+              activeTab === "puzzle"
+                ? "bg-purple-600 text-white shadow-md"
+                : "text-gray-500 hover:text-gray-950"
+            }`}
+          >
+            🧩 Crucigrama
+          </button>
         </div>
       </div>
 
@@ -2313,8 +2798,10 @@ const ExplorerGamesHub = () => {
             <ClimaticMemorizeGame />
           ) : activeTab === "dressup" ? (
             <ClimaticDressingSimulator />
-          ) : (
+          ) : activeTab === "paint" ? (
             <ClimaticMapPainter />
+          ) : (
+            <ClimaticCrosswordGame />
           )}
         </motion.div>
       </AnimatePresence>
