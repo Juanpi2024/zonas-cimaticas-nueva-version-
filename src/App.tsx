@@ -2821,7 +2821,8 @@ const ClimaticCrosswordGame = () => {
                         onChange={(e) => handleCellChange(r, c, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(r, c, e)}
                         onFocus={() => handleCellFocus(r, c)}
-                        className="w-full h-full text-center bg-transparent border-none outline-none focus:ring-0 uppercase p-0 font-extrabold select-all cursor-pointer"
+                        translate="no"
+                        className="notranslate w-full h-full text-center bg-transparent border-none outline-none focus:ring-0 uppercase p-0 font-extrabold select-all cursor-pointer"
                         autoComplete="off"
                         autoCorrect="off"
                         autoCapitalize="off"
@@ -3193,7 +3194,8 @@ const ClimaticWordSearchGame = () => {
                     key={`${rIdx}-${cIdx}`}
                     onClick={() => handleCellClick(rIdx, cIdx)}
                     onMouseEnter={() => handleCellHover(rIdx, cIdx)}
-                    className={`aspect-square w-full rounded-lg text-xs md:text-sm font-bold flex items-center justify-center transition-all cursor-pointer select-none active:scale-95 ${
+                    translate="no"
+                    className={`notranslate aspect-square w-full rounded-lg text-xs md:text-sm font-bold flex items-center justify-center transition-all cursor-pointer select-none active:scale-95 ${
                       found
                         ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/20 font-black scale-105"
                         : selected
