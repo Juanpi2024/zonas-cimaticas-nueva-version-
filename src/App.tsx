@@ -1860,8 +1860,386 @@ const ClimaticDressingSimulator = () => {
   );
 };
 
+const ClimaticMapPainter = () => {
+  const [selectedBrush, setSelectedBrush] = useState<"cold" | "temperate" | "warm" | null>(null);
+  
+  // 5 bands from North to South:
+  // Band 0: Polar North (cold)
+  // Band 1: Temperate North (temperate)
+  // Band 2: Warm Central (warm)
+  // Band 3: Temperate South (temperate)
+  // Band 4: Polar South (cold)
+  const [bandTypes, setBandTypes] = useState<(string | null)[]>([null, null, null, null, null]);
+  const [showResult, setShowResult] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [feedback, setFeedback] = useState<string[]>([]);
+
+  const handleBandClick = (index: number) => {
+    if (selectedBrush === null) return;
+    setBandTypes(prev => {
+      const next = [...prev];
+      next[index] = selectedBrush;
+      return next;
+    });
+  };
+
+  const getBandColor = (type: string | null) => {
+    if (type === "cold") return "rgba(59, 130, 246, 0.75)"; // Blue 500
+    if (type === "temperate") return "rgba(16, 185, 129, 0.75)"; // Emerald 500
+    if (type === "warm") return "rgba(249, 115, 22, 0.75)"; // Orange 500
+    return "rgba(248, 250, 252, 0.4)"; // Ocean slate
+  };
+
+  const validateMap = () => {
+    const correctAnswers = ["cold", "temperate", "warm", "temperate", "cold"];
+    let errors: string[] = [];
+    
+    if (bandTypes[0] !== correctAnswers[0]) {
+      errors.push("❌ Zona Fría del Norte: La franja desde el Círculo Polar Ártico hasta el Polo Norte debe ser de color Azul (Zona Fría).");
+    }
+    if (bandTypes[1] !== correctAnswers[1]) {
+      errors.push("❌ Zona Templada del Norte: La franja entre el Círculo Polar Ártico y el Trópico de Cáncer debe ser de color Verde (Zona Templada).");
+    }
+    if (bandTypes[2] !== correctAnswers[2]) {
+      errors.push("❌ Zona Cálida Central: La franja central entre los trópicos (cruzada por la Línea del Ecuador) debe ser de color Naranja (Zona Cálida).");
+    }
+    if (bandTypes[3] !== correctAnswers[3]) {
+      errors.push("❌ Zona Templada del Sur: La franja entre el Trópico de Capricornio y el Círculo Polar Antártico debe ser de color Verde (Zona Templada).");
+    }
+    if (bandTypes[4] !== correctAnswers[4]) {
+      errors.push("❌ Zona Fría del Sur: La franja desde el Círculo Polar Antártico hasta el Polo Sur (la Antártica) debe ser de color Azul (Zona Fría).");
+    }
+
+    if (errors.length === 0) {
+      setIsCorrect(true);
+    } else {
+      setIsCorrect(false);
+      setFeedback(errors);
+    }
+    setShowResult(true);
+  };
+
+  const resetMap = () => {
+    setBandTypes([null, null, null, null, null]);
+    setShowResult(false);
+    setIsCorrect(false);
+    setSelectedBrush(null);
+  };
+
+  const autoSolve = () => {
+    setBandTypes(["cold", "temperate", "warm", "temperate", "cold"]);
+    setShowResult(false);
+    setIsCorrect(false);
+  };
+
+  return (
+    <div className="bg-[#f0fdf4] border border-green-100 rounded-[32px] p-6 md:p-10 relative overflow-hidden">
+      
+      <div className="grid md:grid-cols-4 gap-8 items-stretch">
+        
+        {/* Left Column: Instructions and Brush Selection */}
+        <div className="md:col-span-1 bg-white rounded-2xl p-6 border border-green-50 shadow-sm flex flex-col justify-between text-left">
+          <div>
+            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-4 inline-block">
+              🗺️ Examen de Cartografía
+            </span>
+            <h3 className="text-xl font-serif font-bold text-gray-900 mb-2">
+              El Pintor del Mapamundi
+            </h3>
+            <p className="text-xs text-gray-500 font-light leading-relaxed mb-6">
+              ¡Prepárate para tu evaluación real! Selecciona un pincel de color y haz clic sobre las diferentes franjas del planisferio para colorear las zonas climáticas de la Tierra.
+            </p>
+
+            {/* Brushes Selection */}
+            <div className="space-y-3">
+              <span className="text-[10px] text-green-900 font-extrabold uppercase tracking-wider block">Elige tu Pincel:</span>
+              
+              <button
+                onClick={() => setSelectedBrush("cold")}
+                className={`w-full p-3.5 rounded-xl border-2 font-extrabold text-xs flex items-center justify-between transition-all cursor-pointer ${
+                  selectedBrush === "cold"
+                    ? "bg-blue-50 border-blue-500 text-blue-900 shadow-sm scale-[1.02]"
+                    : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <span>❄️ Pincel Zona Fría</span>
+                <span className="w-5 h-5 bg-blue-500 rounded-full border border-white" />
+              </button>
+
+              <button
+                onClick={() => setSelectedBrush("temperate")}
+                className={`w-full p-3.5 rounded-xl border-2 font-extrabold text-xs flex items-center justify-between transition-all cursor-pointer ${
+                  selectedBrush === "temperate"
+                    ? "bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm scale-[1.02]"
+                    : "bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <span>🌳 Pincel Zona Templada</span>
+                <span className="w-5 h-5 bg-emerald-500 rounded-full border border-white" />
+              </button>
+
+              <button
+                onClick={() => setSelectedBrush("warm")}
+                className={`w-full p-3.5 rounded-xl border-2 font-extrabold text-xs flex items-center justify-between transition-all cursor-pointer ${
+                  selectedBrush === "warm"
+                    ? "bg-orange-50 border-orange-500 text-orange-900 shadow-sm scale-[1.02]"
+                    : "bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <span>☀️ Pincel Zona Cálida</span>
+                <span className="w-5 h-5 bg-orange-500 rounded-full border border-white" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 mt-6">
+            <button
+              onClick={validateMap}
+              className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-extrabold rounded-xl text-xs transition-all active:scale-95 cursor-pointer shadow-md"
+            >
+              ¡Validar Mapamundi! 🗺️
+            </button>
+            <button
+              onClick={resetMap}
+              className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition-all active:scale-95 cursor-pointer"
+            >
+              Limpiar Todo 🔄
+            </button>
+          </div>
+        </div>
+
+        {/* Right Columns: The Map */}
+        <div className="md:col-span-3 bg-white rounded-2xl p-6 border border-green-50 shadow-sm flex flex-col justify-between">
+          <div className="w-full relative">
+            
+            {/* Legend / Info top */}
+            <div className="flex items-center justify-between mb-4 text-xs text-gray-500 font-semibold bg-gray-50 p-3 rounded-xl border border-gray-100">
+              <span>Pincel Activo: {selectedBrush === "cold" ? "🔵 Azul (Zona Fría)" : selectedBrush === "temperate" ? "🟢 Verde (Zona Templada)" : selectedBrush === "warm" ? "🟠 Naranja (Zona Cálida)" : "🧹 Ninguno (Selecciona un pincel)"}</span>
+              <button
+                onClick={autoSolve}
+                className="text-[10px] text-green-700 hover:underline font-extrabold cursor-pointer"
+              >
+                Ayuda de Dibujo 💡
+              </button>
+            </div>
+
+            {/* SVG Canvas Map */}
+            <div className="relative w-full aspect-[2/1] bg-sky-50 rounded-2xl border-2 border-slate-200 overflow-hidden shadow-inner">
+              <svg viewBox="0 0 800 400" className="w-full h-full select-none">
+                
+                {/* Background Grid Lines */}
+                <g stroke="rgba(0,0,0,0.03)" strokeWidth="1" strokeDasharray="3 3">
+                  <line x1="100" y1="0" x2="100" y2="400" />
+                  <line x1="200" y1="0" x2="200" y2="400" />
+                  <line x1="300" y1="0" x2="300" y2="400" />
+                  <line x1="400" y1="0" x2="400" y2="400" />
+                  <line x1="500" y1="0" x2="500" y2="400" />
+                  <line x1="600" y1="0" x2="600" y2="400" />
+                  <line x1="700" y1="0" x2="700" y2="400" />
+                </g>
+
+                {/* Clickable paint rects (Bands) */}
+                
+                {/* Band 0: Polar North */}
+                <rect
+                  x="0" y="0" width="800" height="60"
+                  fill={getBandColor(bandTypes[0])}
+                  onClick={() => handleBandClick(0)}
+                  className="cursor-pointer transition-all duration-300 hover:fill-blue-100/20"
+                />
+
+                {/* Band 1: Temperate North */}
+                <rect
+                  x="0" y="60" width="800" height="90"
+                  fill={getBandColor(bandTypes[1])}
+                  onClick={() => handleBandClick(1)}
+                  className="cursor-pointer transition-all duration-300 hover:fill-emerald-100/10"
+                />
+
+                {/* Band 2: Warm Central */}
+                <rect
+                  x="0" y="150" width="800" height="100"
+                  fill={getBandColor(bandTypes[2])}
+                  onClick={() => handleBandClick(2)}
+                  className="cursor-pointer transition-all duration-300 hover:fill-orange-100/10"
+                />
+
+                {/* Band 3: Temperate South */}
+                <rect
+                  x="0" y="250" width="800" height="90"
+                  fill={getBandColor(bandTypes[3])}
+                  onClick={() => handleBandClick(3)}
+                  className="cursor-pointer transition-all duration-300 hover:fill-emerald-100/10"
+                />
+
+                {/* Band 4: Polar South */}
+                <rect
+                  x="0" y="340" width="800" height="60"
+                  fill={getBandColor(bandTypes[4])}
+                  onClick={() => handleBandClick(4)}
+                  className="cursor-pointer transition-all duration-300 hover:fill-blue-100/20"
+                />
+
+                {/* Stylized continent outlines (placed above filled bands to absorb colors beautifully!) */}
+                <g fill="rgba(255,255,255,0.7)" stroke="#cbd5e1" strokeWidth="1.5" style={{ pointerEvents: "none" }}>
+                  {/* Antarctica */}
+                  <path d="M 50,375 L 750,375 L 730,395 L 70,395 Z" />
+                  {/* North America */}
+                  <path d="M 80,60 L 180,50 L 220,70 L 240,110 L 210,130 L 160,130 L 170,160 L 140,180 L 120,150 L 80,110 Z" />
+                  {/* South America */}
+                  <path d="M 140,180 L 170,180 L 210,210 L 230,240 L 210,300 L 180,340 L 165,340 L 150,260 L 130,210 Z" />
+                  {/* Africa */}
+                  <path d="M 380,150 L 440,140 L 480,170 L 490,210 L 440,280 L 415,300 L 405,250 L 375,190 Z" />
+                  {/* Europe & Asia */}
+                  <path d="M 370,110 L 410,70 L 450,55 L 550,50 L 680,60 L 740,75 L 750,110 L 700,150 L 720,180 L 650,210 L 620,170 L 580,180 L 520,150 L 480,150 L 450,130 Z" />
+                  {/* Australia */}
+                  <path d="M 640,280 L 700,270 L 720,290 L 700,320 L 650,310 Z" />
+                </g>
+
+                {/* Boundaries & Latitude lines (Pedagogical guidelines) */}
+                <g stroke="#64748b" strokeWidth="1" strokeDasharray="4 4" style={{ pointerEvents: "none" }}>
+                  <line x1="0" y1="60" x2="800" y2="60" />
+                  <line x1="0" y1="150" x2="800" y2="150" />
+                  <line x1="0" y1="200" x2="800" y2="200" stroke="rgba(239, 68, 68, 0.4)" strokeWidth="1.5" />
+                  <line x1="0" y1="250" x2="800" y2="250" />
+                  <line x1="0" y1="340" x2="800" y2="340" />
+                </g>
+
+                {/* Latitude Text Labels on map */}
+                <g fill="#475569" fontSize="9" fontWeight="bold" fontFamily="sans-serif" style={{ pointerEvents: "none" }}>
+                  <text x="10" y="55">66°33' N - Círculo Polar Ártico ❄️</text>
+                  <text x="10" y="145">23°27' N - Trópico de Cáncer ☀️</text>
+                  <text x="10" y="195" fill="#ef4444">0° - Línea del Ecuador 🌍</text>
+                  <text x="10" y="245">23°27' S - Trópico de Capricornio ☀️</text>
+                  <text x="10" y="335">66°33' S - Círculo Polar Antártico ❄️</text>
+
+                  {/* Zone description tags */}
+                  <text x="400" y="35" textAnchor="middle" fill="#0f172a" fontSize="10" letterSpacing="1">
+                    {bandTypes[0] === "cold" ? "❄️ ZONA FRÍA DEL NORTE" : bandTypes[0] ? "⚠️ ¡COLOR ERRONEO!" : "PULSA PARA COLOREAR POLO NORTE"}
+                  </text>
+                  <text x="400" y="110" textAnchor="middle" fill="#0f172a" fontSize="10" letterSpacing="1">
+                    {bandTypes[1] === "temperate" ? "🌲 ZONA TEMPLADA DEL NORTE" : bandTypes[1] ? "⚠️ ¡COLOR ERRONEO!" : "PULSA PARA COLOREAR NORTE"}
+                  </text>
+                  <text x="400" y="205" textAnchor="middle" fill="#0f172a" fontSize="10" letterSpacing="1">
+                    {bandTypes[2] === "warm" ? "☀️ ZONA CÁLIDA O INTERTROPICAL" : bandTypes[2] ? "⚠️ ¡COLOR ERRONEO!" : "PULSA PARA COLOREAR EQUILIBRIO CENTRAL"}
+                  </text>
+                  <text x="400" y="300" textAnchor="middle" fill="#0f172a" fontSize="10" letterSpacing="1">
+                    {bandTypes[3] === "temperate" ? "🍂 ZONA TEMPLADA DEL SUR" : bandTypes[3] ? "⚠️ ¡COLOR ERRONEO!" : "PULSA PARA COLOREAR SUR"}
+                  </text>
+                  <text x="400" y="375" textAnchor="middle" fill="#0f172a" fontSize="10" letterSpacing="1">
+                    {bandTypes[4] === "cold" ? "❄️ ZONA FRÍA DEL SUR" : bandTypes[4] ? "⚠️ ¡COLOR ERRONEO!" : "PULSA PARA COLOREAR ANTÁRTICA"}
+                  </text>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Validation Result Modal */}
+      <AnimatePresence>
+        {showResult && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-[40px] p-8 md:p-12 max-w-lg w-full border-4 border-green-500 text-center shadow-2xl relative overflow-hidden"
+            >
+              {isCorrect ? (
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="w-20 h-20 bg-green-100 border border-green-300 rounded-full flex items-center justify-center text-5xl mb-4 animate-bounce">
+                    🎓
+                  </div>
+                  
+                  <span className="bg-green-100 border border-green-200 text-green-800 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+                    ¡Certificación de Excelencia!
+                  </span>
+
+                  <h3 className="text-2xl md:text-3xl font-serif font-bold text-gray-900 mb-4 leading-tight">
+                    ¡Felicidades, Súper Cartógrafo Juanpi!
+                  </h3>
+                  
+                  <p className="text-gray-600 font-light mb-8 leading-relaxed text-sm">
+                    Has dibujado y clasificado con 100% de exactitud las zonas climáticas de la Tierra en el planisferio, respetando todas las líneas de latitud delimitadoras. ¡Estás completamente listo para tu prueba real!
+                  </p>
+
+                  <div className="flex gap-3 w-full">
+                    <button
+                      onClick={resetMap}
+                      className="flex-1 py-3.5 bg-green-600 hover:bg-green-700 text-white font-extrabold rounded-2xl text-sm transition-all active:scale-95 cursor-pointer shadow-md"
+                    >
+                      Volver a Pintar 🔄
+                    </button>
+                    <button
+                      onClick={() => setShowResult(false)}
+                      className="flex-1 py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-2xl text-sm transition-all active:scale-95 cursor-pointer"
+                    >
+                      Cerrar y Ver Mapa
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="w-16 h-16 bg-red-100 border border-red-300 rounded-full flex items-center justify-center text-4xl mb-4 animate-pulse">
+                    ✏️
+                  </div>
+                  
+                  <span className="bg-red-100 border border-red-200 text-red-800 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+                    ¡Ajustes de Cartografía Requeridos!
+                  </span>
+
+                  <h3 className="text-xl md:text-2xl font-serif font-bold text-gray-900 mb-4 leading-tight text-center">
+                    Casi lo tienes, Juanpi
+                  </h3>
+
+                  <p className="text-gray-600 font-light mb-6 text-xs text-center">
+                    Revisa las franjas señaladas para corregir los colores antes de tu evaluación:
+                  </p>
+
+                  <div className="w-full text-left space-y-2 mb-6 max-h-[160px] overflow-y-auto bg-red-50/50 p-4 rounded-xl border border-red-100">
+                    {feedback.map((err, i) => (
+                      <div key={i} className="text-xs text-red-800 font-medium">
+                        {err}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2 w-full">
+                    <button
+                      onClick={() => setShowResult(false)}
+                      className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-extrabold rounded-2xl text-xs transition-all active:scale-95 cursor-pointer shadow-md"
+                    >
+                      Corregir Mapamundi ✏️
+                    </button>
+                    <button
+                      onClick={() => {
+                        autoSolve();
+                        setShowResult(false);
+                      }}
+                      className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-xs transition-all active:scale-95 cursor-pointer"
+                    >
+                      Mostrar Correcto 💡
+                    </button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const ExplorerGamesHub = () => {
-  const [activeTab, setActiveTab] = useState<"board" | "memorize" | "dressup">("board");
+  const [activeTab, setActiveTab] = useState<"board" | "memorize" | "dressup" | "paint">("board");
 
   return (
     <div className="my-24 max-w-6xl mx-auto px-6 md:px-12">
@@ -1873,40 +2251,50 @@ const ExplorerGamesHub = () => {
           Academia de Súper Exploradores
         </h2>
         <p className="text-gray-600 font-light max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
-          ¡Aprende y pon a prueba tu ingenio! Elige entre tres misiones interactivas diseñadas especialmente para desafiar tus conocimientos geográficos.
+          ¡Aprende y pon a prueba tu ingenio! Elige entre cuatro misiones interactivas diseñadas especialmente para desafiar tus conocimientos geográficos.
         </p>
 
         {/* Tab Selector */}
-        <div className="flex justify-center gap-4 mt-8 bg-white p-2 rounded-2xl border border-gray-200 max-w-lg mx-auto shadow-sm">
+        <div className="flex justify-center gap-4 mt-8 bg-white p-2 rounded-2xl border border-gray-200 max-w-xl mx-auto shadow-sm">
           <button
             onClick={() => setActiveTab("board")}
-            className={`flex-1 py-3 px-4 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
               activeTab === "board"
                 ? "bg-yellow-400 text-gray-950 shadow-md"
                 : "text-gray-500 hover:text-gray-950"
             }`}
           >
-            🎲 El Gran Tablero
+            🎲 Tablero
           </button>
           <button
             onClick={() => setActiveTab("memorize")}
-            className={`flex-1 py-3 px-4 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
               activeTab === "memorize"
                 ? "bg-blue-600 text-white shadow-md"
                 : "text-gray-500 hover:text-gray-950"
             }`}
           >
-            🃏 Memorice Relacional
+            🃏 Memorice
           </button>
           <button
             onClick={() => setActiveTab("dressup")}
-            className={`flex-1 py-3 px-4 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
               activeTab === "dressup"
                 ? "bg-amber-500 text-white shadow-md"
                 : "text-gray-500 hover:text-gray-950"
             }`}
           >
-            🧥 Vestidor Climático
+            🧥 Vestidor
+          </button>
+          <button
+            onClick={() => setActiveTab("paint")}
+            className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
+              activeTab === "paint"
+                ? "bg-green-600 text-white shadow-md"
+                : "text-gray-500 hover:text-gray-950"
+            }`}
+          >
+            🗺️ Pintar Mapa
           </button>
         </div>
       </div>
@@ -1923,8 +2311,10 @@ const ExplorerGamesHub = () => {
             <ClimaticBoardGame />
           ) : activeTab === "memorize" ? (
             <ClimaticMemorizeGame />
-          ) : (
+          ) : activeTab === "dressup" ? (
             <ClimaticDressingSimulator />
+          ) : (
+            <ClimaticMapPainter />
           )}
         </motion.div>
       </AnimatePresence>
