@@ -669,6 +669,429 @@ const TemperateGearInteractive = () => {
   );
 };
 
+const ClimaticBoardGame = () => {
+  const [position, setPosition] = useState(0);
+  const [isRolling, setIsRolling] = useState(false);
+  const [diceResult, setDiceResult] = useState<number | null>(null);
+  const [showQuestion, setShowQuestion] = useState(false);
+  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [answerFeedback, setAnswerFeedback] = useState<string | null>(null);
+  const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
+  const [earnedBadges, setEarnedBadges] = useState<string[]>([]);
+  const [gameFinished, setGameFinished] = useState(false);
+
+  const boardSteps = [
+    { id: 0, title: "Inicio", type: "start", icon: "🚀", label: "Punto de Partida" },
+    { id: 1, title: "Zona Cálida", type: "warm", icon: "🌴", label: "La Radiación Solar" },
+    { id: 2, title: "Zona Cálida", type: "warm", icon: "🏜️", label: "Adaptación del Cactus" },
+    { id: 3, title: "Zona Templada", type: "temperate", icon: "🍂", label: "Las 4 Estaciones" },
+    { id: 4, title: "Zona Templada", type: "temperate", icon: "🏔️", label: "La Alta Montaña" },
+    { id: 5, title: "Zona Fría", type: "cold", icon: "🐻‍❄️", label: "Osos vs Pingüinos" },
+    { id: 6, title: "Zona Fría", type: "cold", icon: "❄️", label: "Vivir en el Hielo" },
+    { id: 7, title: "Meta", type: "finish", icon: "🏆", label: "Gran Explorador" }
+  ];
+
+  const questions = [
+    {
+      step: 1,
+      q: "¿Por qué hace tanto calor de forma constante en la Zona Cálida?",
+      options: [
+        "Porque el Sol está más cerca de la Tierra en el Ecuador.",
+        "Porque los rayos del Sol llegan muy directos y perpendiculares (rectos).",
+        "Porque no hay vegetación que tape la luz del Sol."
+      ],
+      correct: 1,
+      badge: "Insignia Cálida ☀️",
+      desc: "¡Exacto! Al llegar de forma vertical, el calor se concentra en un área pequeña, haciéndola muy caliente."
+    },
+    {
+      step: 2,
+      q: "¿De qué forma se adapta la flora (como el Cactus) para sobrevivir al clima seco del desierto?",
+      options: [
+        "Tienen hojas muy anchas y delgadas para absorber humedad nocturna.",
+        "Tienen espinas para evitar perder agua por evaporación y guardan líquido en su tallo.",
+        "Cambian de color verde a amarillo según la estación."
+      ],
+      correct: 1,
+      badge: "Insignia del Desierto 🌵",
+      desc: "¡Brillante! Las espinas son hojas modificadas que reducen la transpiración al mínimo."
+    },
+    {
+      step: 3,
+      q: "¿Por qué en la Zona Templada podemos distinguir claramente las cuatro estaciones?",
+      options: [
+        "Porque la Tierra se aleja del Sol durante los meses de invierno.",
+        "Porque los rayos del Sol llegan con una inclinación moderada que varía a lo largo del año.",
+        "Porque el viento sopla siempre en una sola dirección."
+      ],
+      correct: 1,
+      badge: "Insignia de las Estaciones 🍃",
+      desc: "¡Excelente! La inclinación semi-inclinada y el movimiento de traslación crean el ciclo perfecto de estaciones."
+    },
+    {
+      step: 4,
+      q: "Si subes una montaña altísima en la Zona Templada, ¿qué cambio climático experimentas?",
+      options: [
+        "La temperatura sube porque estás más cerca de las nubes cálidas.",
+        "El clima se vuelve cada vez más frío, imitando la subida hacia los polos.",
+        "El clima se mantiene igual, pero el aire se vuelve más denso."
+      ],
+      correct: 1,
+      badge: "Insignia de la Altura 🏔️",
+      desc: "¡Maravilloso! A mayor altitud disminuye la presión y la temperatura, creando un clima frío azonal."
+    },
+    {
+      step: 5,
+      q: "¿Es verdadero que los osos polares y los pingüinos viven y conviven en el mismo ecosistema?",
+      options: [
+        "Sí, ambos viven juntos compartiendo los glaciares del Polo Sur.",
+        "No, los osos polares habitan en el Polo Norte (Ártico) y los pingüinos en el Polo Sur (Antártica).",
+        "Sí, pero solo se juntan durante la época de invierno extremo."
+      ],
+      correct: 1,
+      badge: "Insignia de los Polos 🐧",
+      desc: "¡Así es! Están separados por todo el planeta: los osos en el norte y los pingüinos en el sur."
+    },
+    {
+      step: 6,
+      q: "¿Cuál es una adaptación clave de las personas para vivir en la Zona Fría?",
+      options: [
+        "Usar ropa de algodón y chalas ligeras.",
+        "Construir casas térmicas con techos inclinados para la nieve y vestir trajes gruesos impermeables.",
+        "Mudarse al interior de cuevas bajo tierra y no salir nunca."
+      ],
+      correct: 1,
+      badge: "Insignia de Supervivencia ❄️",
+      desc: "¡Excelente respuesta! El ingenio humano nos permite habitar hasta los lugares más helados."
+    }
+  ];
+
+  const rollDice = () => {
+    if (isRolling || showQuestion || gameFinished) return;
+    setIsRolling(true);
+    setDiceResult(null);
+
+    let rollCount = 0;
+    const interval = setInterval(() => {
+      setDiceResult(Math.floor(Math.random() * 3) + 1); // 1, 2 or 3 spaces
+      rollCount++;
+      if (rollCount > 10) {
+        clearInterval(interval);
+        
+        // Final result
+        const finalRoll = Math.floor(Math.random() * 3) + 1;
+        setDiceResult(finalRoll);
+        setIsRolling(false);
+
+        const newPos = Math.min(position + finalRoll, boardSteps.length - 1);
+        
+        setTimeout(() => {
+          setPosition(newPos);
+          
+          if (newPos === boardSteps.length - 1) {
+            setGameFinished(true);
+          } else {
+            // Find question for this step
+            const questionIdx = questions.findIndex(q => q.step === newPos);
+            if (questionIdx !== -1) {
+              setCurrentQuestionIdx(questionIdx);
+              setSelectedAnswer(null);
+              setAnswerFeedback(null);
+              setIsAnswerCorrect(null);
+              setShowQuestion(true);
+            }
+          }
+        }, 800);
+      }
+    }, 100);
+  };
+
+  const handleAnswer = (idx: number) => {
+    if (selectedAnswer !== null) return;
+    setSelectedAnswer(idx);
+
+    const question = questions[currentQuestionIdx];
+    if (idx === question.correct) {
+      setIsAnswerCorrect(true);
+      setAnswerFeedback(question.desc);
+      if (!earnedBadges.includes(question.badge)) {
+        setEarnedBadges(prev => [...prev, question.badge]);
+      }
+    } else {
+      setIsAnswerCorrect(false);
+      setAnswerFeedback("⚠️ ¡Oh! Esa no es la correcta. ¡Inténtalo de nuevo para aprender!");
+    }
+  };
+
+  const closeQuestion = () => {
+    if (isAnswerCorrect) {
+      setShowQuestion(false);
+    } else {
+      // Allow trying again
+      setSelectedAnswer(null);
+      setAnswerFeedback(null);
+      setIsAnswerCorrect(null);
+    }
+  };
+
+  const resetGame = () => {
+    setPosition(0);
+    setDiceResult(null);
+    setShowQuestion(false);
+    setEarnedBadges([]);
+    setGameFinished(false);
+  };
+
+  return (
+    <div className="bg-white rounded-[40px] p-8 md:p-14 shadow-2xl border border-gray-100 max-w-5xl mx-auto relative overflow-hidden my-20">
+      {/* Decorative sun */}
+      <div className="absolute -top-12 -left-12 text-yellow-100/60 pointer-events-none">
+        <Sun size={200} />
+      </div>
+
+      <div className="relative z-10">
+        <div className="text-center mb-10">
+          <span className="inline-flex items-center gap-2 bg-yellow-100 border border-yellow-200 text-yellow-800 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+            🎲 Gran Juego de Mesa
+          </span>
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-4">
+            El Gran Tablero del Explorador
+          </h2>
+          <p className="text-gray-600 font-light max-w-xl mx-auto leading-relaxed text-sm md:text-base">
+            ¡Demuestra todo lo que has aprendido en el viaje! Tira el dado para avanzar a lo largo de las zonas climáticas de la Tierra. ¡Contesta las preguntas para ganar tus insignias oficiales!
+          </p>
+        </div>
+
+        {/* Badges Display */}
+        <div className="flex flex-wrap justify-center gap-3 mb-10">
+          {questions.map((q, idx) => {
+            const earned = earnedBadges.includes(q.badge);
+            return (
+              <span
+                key={idx}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all duration-500 ${
+                  earned
+                    ? "bg-emerald-50 border-emerald-300 text-emerald-800 scale-105 shadow-sm"
+                    : "bg-gray-50 border-gray-200 text-gray-400 opacity-60"
+                }`}
+              >
+                {earned ? "🏆" : "🔒"} {q.badge.split(" ")[0]}
+              </span>
+            );
+          })}
+        </div>
+
+        {/* Board Map */}
+        <div className="grid grid-cols-2 md:grid-cols-8 gap-4 mb-12">
+          {boardSteps.map((step) => {
+            const isCurrent = position === step.id;
+            const isPassed = position > step.id;
+            
+            let colorClasses = "";
+            if (step.type === "start" || step.type === "finish") {
+              colorClasses = "bg-yellow-50 border-yellow-300 text-yellow-950";
+            } else if (step.type === "warm") {
+              colorClasses = "bg-orange-50 border-orange-200 text-orange-950";
+            } else if (step.type === "temperate") {
+              colorClasses = "bg-teal-50 border-teal-200 text-teal-950";
+            } else {
+              colorClasses = "bg-blue-50 border-blue-200 text-blue-950";
+            }
+
+            return (
+              <div
+                key={step.id}
+                className={`relative rounded-2xl p-4 border text-center transition-all duration-500 flex flex-col justify-between h-[120px] shadow-sm ${colorClasses} ${
+                  isCurrent 
+                    ? "ring-4 ring-yellow-400 scale-105 shadow-md font-bold"
+                    : isPassed 
+                    ? "opacity-60" 
+                    : ""
+                }`}
+              >
+                <div className="text-3xl mb-1">{step.icon}</div>
+                <div className="text-xs uppercase tracking-widest font-bold opacity-80">{step.title}</div>
+                <div className="text-[10px] font-light leading-tight">{step.label}</div>
+
+                {isCurrent && (
+                  <div
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-gray-900 font-extrabold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider shadow"
+                  >
+                    Tú aquí ☀️
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Controls & Dice */}
+        <div className="flex flex-col items-center justify-center gap-6">
+          <div className="flex items-center gap-6">
+            <button
+              onClick={rollDice}
+              disabled={isRolling || showQuestion || gameFinished}
+              className={`px-8 py-4 bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-100 disabled:text-gray-400 text-gray-900 font-extrabold rounded-2xl shadow-lg border-b-4 border-yellow-600 transition-all active:scale-95 text-base cursor-pointer`}
+            >
+              {isRolling ? "Girando el Dado..." : "🎲 ¡Tirar el Dado!"}
+            </button>
+
+            {/* Custom Dice Graphic */}
+            <motion.div
+              animate={isRolling ? { rotate: 360 } : {}}
+              className="w-16 h-16 bg-white border-2 border-gray-300 rounded-2xl shadow flex items-center justify-center text-3xl font-extrabold text-gray-900"
+            >
+              {diceResult !== null ? diceResult : "?"}
+            </motion.div>
+          </div>
+          
+          <div className="text-xs text-gray-400 uppercase tracking-widest font-bold">
+            Avanzas de 1 a 3 casillas por tiro
+          </div>
+        </div>
+
+        {/* Question Modal Overlay */}
+        <AnimatePresence>
+          {showQuestion && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                className="bg-white rounded-3xl p-6 md:p-10 max-w-xl w-full border border-gray-100 shadow-2xl relative"
+              >
+                <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+                  ❓ Pregunta del Camino
+                </span>
+                <h3 className="text-xl md:text-2xl font-serif font-bold text-gray-900 mb-6 leading-relaxed">
+                  {questions[currentQuestionIdx].q}
+                </h3>
+
+                <div className="flex flex-col gap-3 mb-6">
+                  {questions[currentQuestionIdx].options.map((option, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleAnswer(idx)}
+                      disabled={selectedAnswer !== null}
+                      className={`p-4 rounded-2xl border text-left text-sm font-semibold transition-all flex items-center justify-between cursor-pointer ${
+                        selectedAnswer === idx
+                          ? isAnswerCorrect
+                            ? "bg-emerald-50 border-emerald-500 text-emerald-800"
+                            : "bg-red-50 border-red-500 text-red-800"
+                          : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      <span>{option}</span>
+                      {selectedAnswer === idx && (
+                        <span>{isAnswerCorrect ? "✅" : "❌"}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                <AnimatePresence>
+                  {answerFeedback && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`p-4 rounded-2xl border text-sm font-light leading-relaxed mb-6 ${
+                        isAnswerCorrect
+                          ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                          : "bg-red-50 border-red-200 text-red-800"
+                      }`}
+                    >
+                      {answerFeedback}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {selectedAnswer !== null && (
+                  <button
+                    onClick={closeQuestion}
+                    className={`w-full py-3.5 text-white font-extrabold rounded-2xl shadow-sm text-sm transition-all active:scale-95 cursor-pointer ${
+                      isAnswerCorrect ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-500 hover:bg-red-600"
+                    }`}
+                  >
+                    {isAnswerCorrect ? "¡Avanzar en el Tablero! 🚀" : "Intentar de Nuevo 🔄"}
+                  </button>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Victory Modal */}
+        <AnimatePresence>
+          {gameFinished && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                className="bg-white rounded-[40px] p-8 md:p-12 max-w-2xl w-full border-4 border-yellow-400 text-center shadow-2xl relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-yellow-50 via-white to-white pointer-events-none opacity-40"></div>
+                
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="w-24 h-24 bg-yellow-100 border border-yellow-400 rounded-full flex items-center justify-center text-6xl mb-6 animate-bounce">
+                    🏆
+                  </div>
+                  
+                  <span className="bg-yellow-100 border border-yellow-200 text-yellow-800 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+                    ¡Certificación Oficial!
+                  </span>
+
+                  <h3 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4 leading-tight">
+                    ¡Felicidades, Súper Explorador Juanpi!
+                  </h3>
+                  
+                  <p className="text-gray-600 font-light max-w-md mb-8 leading-relaxed text-sm md:text-base">
+                    Has completado el Gran Tablero Climático y recolectado todas las insignias de aprendizaje. ¡Ahora eres un experto oficial certificado en los climas de la Tierra!
+                  </p>
+
+                  <div className="flex gap-2 justify-center mb-8 bg-gray-50 p-4 rounded-2xl border border-gray-100 w-full max-w-sm">
+                    {questions.map((q, idx) => (
+                      <span key={idx} className="text-3xl" title={q.badge}>
+                        {q.badge.split(" ")[0]}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md justify-center">
+                    <button
+                      onClick={resetGame}
+                      className="px-8 py-3.5 bg-yellow-400 hover:bg-yellow-500 text-gray-950 font-extrabold rounded-2xl text-sm transition-all active:scale-95 cursor-pointer shadow-md"
+                    >
+                      Volver a Jugar 🔄
+                    </button>
+                    <button
+                      onClick={() => setGameFinished(false)}
+                      className="px-8 py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-2xl text-sm transition-all active:scale-95 cursor-pointer"
+                    >
+                      Cerrar y Ver el Sitio
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
@@ -948,6 +1371,10 @@ export default function App() {
 
         </div>
       </section>
+
+      <FadeIn>
+        <ClimaticBoardGame />
+      </FadeIn>
 
       {/* Resumen Final */}
       <section className="py-32 bg-[#f5f2ed] border-t-8 border-white">
