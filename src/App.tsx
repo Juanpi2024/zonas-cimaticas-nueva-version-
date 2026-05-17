@@ -16,8 +16,240 @@ import {
   Globe2,
   Star,
   Info,
-  ChevronRight
+  ChevronRight,
+  Volume2,
+  VolumeX
 } from "lucide-react";
+
+// --- Premium Sound Effects System ---
+// Diseñado con Web Audio API para generar tonos premium sintetizados en tiempo real.
+// ¡100% offline, ultra liviano, sin archivos externos ni dependencias de red!
+
+class SoundEngine {
+  private ctx: AudioContext | null = null;
+  private isMuted: boolean = false;
+
+  private initCtx() {
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    if (this.ctx.state === "suspended") {
+      this.ctx.resume();
+    }
+  }
+
+  toggleMute() {
+    this.isMuted = !this.isMuted;
+    return this.isMuted;
+  }
+
+  getMuted() {
+    return this.isMuted;
+  }
+
+  // 1. Sonido Sutil de Click/Tap (para botones)
+  playClick() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+
+      gain.gain.setValueAtTime(0.04, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.05);
+    } catch (e) {
+      console.warn("Audio Context failed:", e);
+    }
+  }
+
+  // 2. Acierto / Ropa Correcta / Respuesta Correcta
+  playSuccess() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      
+      // Nota 1
+      const osc1 = this.ctx.createOscillator();
+      const gain1 = this.ctx.createGain();
+      osc1.type = "triangle";
+      osc1.frequency.setValueAtTime(523.25, now); // C5
+      gain1.gain.setValueAtTime(0.12, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc1.connect(gain1);
+      gain1.connect(this.ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.15);
+
+      // Nota 2 (un poco después)
+      const osc2 = this.ctx.createOscillator();
+      const gain2 = this.ctx.createGain();
+      osc2.type = "sine";
+      osc2.frequency.setValueAtTime(659.25, now + 0.08); // E5
+      gain2.gain.setValueAtTime(0.12, now + 0.08);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc2.connect(gain2);
+      gain2.connect(this.ctx.destination);
+      osc2.start(now + 0.08);
+      osc2.stop(now + 0.25);
+
+      // Nota 3
+      const osc3 = this.ctx.createOscillator();
+      const gain3 = this.ctx.createGain();
+      osc3.type = "sine";
+      osc3.frequency.setValueAtTime(783.99, now + 0.16); // G5
+      gain3.gain.setValueAtTime(0.15, now + 0.16);
+      gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      osc3.connect(gain3);
+      gain3.connect(this.ctx.destination);
+      osc3.start(now + 0.16);
+      osc3.stop(now + 0.4);
+    } catch (e) {
+      console.warn(e);
+    }
+  }
+
+  // 3. Fallo / Ropa Incorrecta / Error
+  playFailure() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(220, now); // A3
+      osc.frequency.linearRampToValueAtTime(147, now + 0.25); // D3
+
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+      // Sencillo filtro de paso bajo para suavizar el sonido del diente de sierra
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(400, now);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.28);
+    } catch (e) {
+      console.warn(e);
+    }
+  }
+
+  // 4. Giro del Dado / Movimiento (simulado)
+  playDice() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+
+      // Sonido de rodar: 6 "ticks" rápidos que aceleran
+      for (let i = 0; i < 6; i++) {
+        const tickTime = now + i * 0.08;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "triangle";
+        // Frecuencia variable para dar sensación de movimiento
+        osc.frequency.setValueAtTime(300 + Math.random() * 400, tickTime);
+        
+        gain.gain.setValueAtTime(0.05, tickTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, tickTime + 0.06);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(tickTime);
+        osc.stop(tickTime + 0.06);
+      }
+
+      // Golpe final de dado en la mesa
+      const endNow = now + 0.48;
+      const oscEnd = this.ctx.createOscillator();
+      const gainEnd = this.ctx.createGain();
+      oscEnd.type = "sine";
+      oscEnd.frequency.setValueAtTime(180, endNow);
+      gainEnd.gain.setValueAtTime(0.1, endNow);
+      gainEnd.gain.exponentialRampToValueAtTime(0.001, endNow + 0.15);
+      oscEnd.connect(gainEnd);
+      gainEnd.connect(this.ctx.destination);
+      oscEnd.start(endNow);
+      oscEnd.stop(endNow + 0.15);
+    } catch (e) {
+      console.warn(e);
+    }
+  }
+
+  // 5. Gran Victoria / Diploma / Misión completada
+  playVictory() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+
+      // Un arpegio mayor triunfal rápido C Major: C4 -> E4 -> G4 -> C5 -> E5 -> G5 -> C6
+      const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        const time = now + idx * 0.09;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, time);
+
+        // Acentuar última nota
+        const volume = idx === notes.length - 1 ? 0.12 : 0.07;
+        const duration = idx === notes.length - 1 ? 0.8 : 0.25;
+
+        gain.gain.setValueAtTime(volume, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+        // Añadir oscilador secundario (octava) con forma de onda de seno
+        const oscSub = this.ctx.createOscillator();
+        const gainSub = this.ctx.createGain();
+        oscSub.type = "sine";
+        oscSub.frequency.setValueAtTime(freq * 2, time);
+        gainSub.gain.setValueAtTime(volume * 0.5, time);
+        gainSub.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        oscSub.connect(gainSub);
+        gainSub.connect(this.ctx.destination);
+
+        osc.start(time);
+        osc.stop(time + duration);
+        
+        oscSub.start(time);
+        oscSub.stop(time + duration);
+      });
+    } catch (e) {
+      console.warn(e);
+    }
+  }
+}
+
+export const soundFX = new SoundEngine();
 
 // --- Components ---
 
@@ -233,15 +465,23 @@ const PackingInteractive = () => {
         setPackedCount(prev => prev - 1);
         setFeedback(`Te has quitado la ${item.name.split(" ")[0]}. ¡Volverá a tu mochila!`);
         setFeedbackType("error");
+        soundFX.playClick();
       } else {
         setGearList(prev => prev.map(g => g.id === id ? { ...g, packed: true } : g));
-        setPackedCount(prev => prev + 1);
+        const newCount = packedCount + 1;
+        setPackedCount(newCount);
         setFeedback(`¡Excelente! ${item.desc}`);
         setFeedbackType("success");
+        if (newCount === maxCorrect) {
+          soundFX.playVictory();
+        } else {
+          soundFX.playSuccess();
+        }
       }
     } else {
       setFeedback(`🚨 ¡Alerta de Calor Absoluto! ${item.desc}`);
       setFeedbackType("error");
+      soundFX.playFailure();
     }
   };
 
@@ -388,15 +628,23 @@ const PolarGearInteractive = () => {
         setPackedCount(prev => prev - 1);
         setFeedback(`Te has quitado la ${item.name.split(" ")[0]}. ¡Hace frío!`);
         setFeedbackType("error");
+        soundFX.playClick();
       } else {
         setGearList(prev => prev.map(g => g.id === id ? { ...g, packed: true } : g));
-        setPackedCount(prev => prev + 1);
+        const newCount = packedCount + 1;
+        setPackedCount(newCount);
         setFeedback(`¡Excelente! ${item.desc}`);
         setFeedbackType("success");
+        if (newCount === maxCorrect) {
+          soundFX.playVictory();
+        } else {
+          soundFX.playSuccess();
+        }
       }
     } else {
       setFeedback(`🚨 ¡Alerta de Congelación! ${item.desc}`);
       setFeedbackType("error");
+      soundFX.playFailure();
     }
   };
 
@@ -543,15 +791,23 @@ const TemperateGearInteractive = () => {
         setPackedCount(prev => prev - 1);
         setFeedback(`Te has quitado la ${item.name.split(" ")[0]}. ¡Volverá a tu equipaje!`);
         setFeedbackType("error");
+        soundFX.playClick();
       } else {
         setGearList(prev => prev.map(g => g.id === id ? { ...g, packed: true } : g));
-        setPackedCount(prev => prev + 1);
+        const newCount = packedCount + 1;
+        setPackedCount(newCount);
         setFeedback(`¡Excelente! ${item.desc}`);
         setFeedbackType("success");
+        if (newCount === maxCorrect) {
+          soundFX.playVictory();
+        } else {
+          soundFX.playSuccess();
+        }
       }
     } else {
       setFeedback(`🚨 ¡Alerta de Ropa Inadecuada! ${item.desc}`);
       setFeedbackType("error");
+      soundFX.playFailure();
     }
   };
 
@@ -771,6 +1027,7 @@ const ClimaticBoardGame = () => {
     if (isRolling || showQuestion || gameFinished) return;
     setIsRolling(true);
     setDiceResult(null);
+    soundFX.playDice();
 
     let rollCount = 0;
     const interval = setInterval(() => {
@@ -791,6 +1048,7 @@ const ClimaticBoardGame = () => {
           
           if (newPos === boardSteps.length - 1) {
             setGameFinished(true);
+            soundFX.playVictory();
           } else {
             // Find question for this step
             const questionIdx = questions.findIndex(q => q.step === newPos);
@@ -815,12 +1073,14 @@ const ClimaticBoardGame = () => {
     if (idx === question.correct) {
       setIsAnswerCorrect(true);
       setAnswerFeedback(question.desc);
+      soundFX.playSuccess();
       if (!earnedBadges.includes(question.badge)) {
         setEarnedBadges(prev => [...prev, question.badge]);
       }
     } else {
       setIsAnswerCorrect(false);
       setAnswerFeedback("⚠️ ¡Oh! Esa no es la correcta. ¡Inténtalo de nuevo para aprender!");
+      soundFX.playFailure();
     }
   };
 
@@ -1174,6 +1434,7 @@ const ClimaticMemorizeGame = () => {
       showMatchModal
     ) return;
 
+    soundFX.playClick();
     const newSelected = [...selected, index];
     setSelected(newSelected);
 
@@ -1191,9 +1452,13 @@ const ClimaticMemorizeGame = () => {
           
           if (matched.length + 1 === 6) {
             setGameFinished(true);
+            soundFX.playVictory();
+          } else {
+            soundFX.playSuccess();
           }
         }, 600);
       } else {
+        soundFX.playFailure();
         setTimeout(() => {
           setSelected([]);
         }, 1500);
@@ -1558,6 +1823,7 @@ const ClimaticDressingSimulator = () => {
   const [reasons, setReasons] = useState<string[]>([]);
 
   const handleEquip = (category: string, itemName: string) => {
+    soundFX.playClick();
     if (category === "extras") {
       setEquipped(prev => {
         const alreadyHas = prev.extras.includes(itemName);
@@ -1584,9 +1850,18 @@ const ClimaticDressingSimulator = () => {
     setScore(score);
     setReasons(reasons);
     setShowResult(true);
+
+    if (score === 100) {
+      soundFX.playVictory();
+    } else if (score >= 60) {
+      soundFX.playSuccess();
+    } else {
+      soundFX.playFailure();
+    }
   };
 
   const changeMission = () => {
+    soundFX.playClick();
     setCurrentMissionIdx(prev => (prev + 1) % missions.length);
     setShowResult(false);
   };
@@ -1876,6 +2151,7 @@ const ClimaticMapPainter = () => {
 
   const handleBandClick = (index: number) => {
     if (selectedBrush === null) return;
+    soundFX.playClick();
     setBandTypes(prev => {
       const next = [...prev];
       next[index] = selectedBrush;
@@ -1912,9 +2188,11 @@ const ClimaticMapPainter = () => {
 
     if (errors.length === 0) {
       setIsCorrect(true);
+      soundFX.playVictory();
     } else {
       setIsCorrect(false);
       setFeedback(errors);
+      soundFX.playFailure();
     }
     setShowResult(true);
   };
@@ -2348,6 +2626,7 @@ const ClimaticCrosswordGame = () => {
     const char = value.toUpperCase().slice(-1);
     if (!/^[A-ZÑ]$/.test(char) && char !== "") return;
     
+    soundFX.playClick();
     const key = `${r}-${c}`;
     setInputs(prev => ({ ...prev, [key]: char }));
     
@@ -2398,6 +2677,7 @@ const ClimaticCrosswordGame = () => {
   };
 
   const handleClueClick = (w: typeof WORDS[0]) => {
+    soundFX.playClick();
     setActiveWordId(w.id);
     focusCell(w.row, w.col);
   };
@@ -2438,6 +2718,9 @@ const ClimaticCrosswordGame = () => {
 
     if (allCorrect) {
       setShowVictory(true);
+      soundFX.playVictory();
+    } else {
+      soundFX.playFailure();
     }
   };
 
@@ -2732,7 +3015,7 @@ const ExplorerGamesHub = () => {
         {/* Tab Selector */}
         <div className="flex justify-center gap-4 mt-8 bg-white p-2 rounded-2xl border border-gray-200 max-w-4xl mx-auto shadow-sm overflow-x-auto whitespace-nowrap">
           <button
-            onClick={() => setActiveTab("board")}
+            onClick={() => { setActiveTab("board"); soundFX.playClick(); }}
             className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
               activeTab === "board"
                 ? "bg-yellow-400 text-gray-950 shadow-md"
@@ -2742,7 +3025,7 @@ const ExplorerGamesHub = () => {
             🎲 Tablero
           </button>
           <button
-            onClick={() => setActiveTab("memorize")}
+            onClick={() => { setActiveTab("memorize"); soundFX.playClick(); }}
             className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
               activeTab === "memorize"
                 ? "bg-blue-600 text-white shadow-md"
@@ -2752,7 +3035,7 @@ const ExplorerGamesHub = () => {
             🃏 Memorice
           </button>
           <button
-            onClick={() => setActiveTab("dressup")}
+            onClick={() => { setActiveTab("dressup"); soundFX.playClick(); }}
             className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
               activeTab === "dressup"
                 ? "bg-amber-500 text-white shadow-md"
@@ -2762,7 +3045,7 @@ const ExplorerGamesHub = () => {
             🧥 Vestidor
           </button>
           <button
-            onClick={() => setActiveTab("paint")}
+            onClick={() => { setActiveTab("paint"); soundFX.playClick(); }}
             className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
               activeTab === "paint"
                 ? "bg-green-600 text-white shadow-md"
@@ -2772,7 +3055,7 @@ const ExplorerGamesHub = () => {
             🗺️ Pintar Mapa
           </button>
           <button
-            onClick={() => setActiveTab("puzzle")}
+            onClick={() => { setActiveTab("puzzle"); soundFX.playClick(); }}
             className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
               activeTab === "puzzle"
                 ? "bg-purple-600 text-white shadow-md"
@@ -2815,9 +3098,19 @@ export default function App() {
   const { scrollYProgress } = useScroll();
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMuted, setIsMuted] = useState(soundFX.getMuted());
+
+  const handleToggleMute = () => {
+    const muted = soundFX.toggleMute();
+    setIsMuted(muted);
+    if (!muted) {
+      soundFX.playClick();
+    }
+  };
 
   const scrollToSection = (id: string) => {
     setMobileMenuOpen(false);
+    soundFX.playClick();
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -2887,19 +3180,46 @@ export default function App() {
             >
               🎮 Academia
             </button>
+
+            {/* Mute/Unmute sound engine toggle button */}
+            <button
+              onClick={handleToggleMute}
+              className={`ml-2 p-2 rounded-full border transition-all cursor-pointer ${
+                isMuted 
+                  ? "bg-red-50 border-red-200 text-red-500 hover:bg-red-100" 
+                  : "bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100"
+              }`}
+              title={isMuted ? "Activar Sonido" : "Silenciar"}
+            >
+              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            </button>
           </nav>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-gray-600 hover:text-gray-900 focus:outline-none cursor-pointer"
-          >
-            <div className="space-y-1.5">
-              <span className={`block w-6 h-0.5 bg-gray-600 transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} />
-              <span className={`block w-6 h-0.5 bg-gray-600 transition-all duration-300 ${mobileMenuOpen ? "opacity-0" : ""}`} />
-              <span className={`block w-6 h-0.5 bg-gray-600 transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
-            </div>
-          </button>
+          {/* Mobile Sound + Menu Control */}
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              onClick={handleToggleMute}
+              className={`p-2 rounded-full border transition-all cursor-pointer ${
+                isMuted 
+                  ? "bg-red-50 border-red-200 text-red-500" 
+                  : "bg-emerald-50 border-emerald-200 text-emerald-600"
+              }`}
+              title={isMuted ? "Activar Sonido" : "Silenciar"}
+            >
+              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            </button>
+
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 text-gray-600 hover:text-gray-900 focus:outline-none cursor-pointer"
+            >
+              <div className="space-y-1.5">
+                <span className={`block w-6 h-0.5 bg-gray-600 transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} />
+                <span className={`block w-6 h-0.5 bg-gray-600 transition-all duration-300 ${mobileMenuOpen ? "opacity-0" : ""}`} />
+                <span className={`block w-6 h-0.5 bg-gray-600 transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+              </div>
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu Dropdown */}
