@@ -1372,8 +1372,496 @@ const ClimaticMemorizeGame = () => {
   );
 };
 
+const ClimaticDressingSimulator = () => {
+  const missions = [
+    {
+      id: 1,
+      name: "Expedición al Desierto de Atacama 🏜️",
+      zone: "warm",
+      desc: "Clima extremadamente seco y caliente de día (más de 35°C), con radiación solar altísima.",
+      requirements: {
+        head: "Sombrero de sol ligero 👒",
+        torso: "Polera de algodón 👕",
+        legs: "Short veraniego 🩳",
+        feet: "Chalas veraniegas 🩴",
+        extras: ["Bloqueador solar 🧴", "Gafas de sol 🕶️", "Cantimplora con agua 💧"]
+      },
+      evaluation: (equipped: any) => {
+        let score = 0;
+        let reasons = [];
+        
+        if (equipped.head === "Sombrero de sol ligero 👒") { score += 20; } else { reasons.push("⚠️ Tu cabeza está desprotegida frente a la radiación solar extrema."); }
+        if (equipped.torso === "Polera de algodón 👕") { score += 20; } else if (equipped.torso === "Parka térmica gruesa 🧥") { reasons.push("⚠️ ¡La parka te hará sudar y deshidratarte al instante en el desierto!"); } else { reasons.push("⚠️ Necesitas ropa de torso fresca y transpirable."); }
+        if (equipped.legs === "Short veraniego 🩳") { score += 20; } else { reasons.push("⚠️ Los pantalones gruesos te darán demasiado calor."); }
+        if (equipped.feet === "Chalas veraniegas 🩴" || equipped.feet === "Zapatillas deportivas 👟") { score += 20; } else { reasons.push("⚠️ Las botas de nieve pesadas sobre la arena caliente te cansarán."); }
+        
+        const hasSunscreen = equipped.extras.includes("Bloqueador solar 🧴");
+        const hasWater = equipped.extras.includes("Cantimplora con agua 💧");
+        if (hasSunscreen && hasWater) { score += 20; } else { reasons.push("⚠️ ¡Vital! Olvidaste el bloqueador solar o la cantimplora para hidratarte."); }
+
+        return { score, reasons };
+      }
+    },
+    {
+      id: 2,
+      name: "Aventura en la Selva del Amazonas 🌴",
+      zone: "warm",
+      desc: "Clima caluroso (30°C) y sumamente húmedo, con lluvias tropicales repentinas y muchos mosquitos.",
+      requirements: {
+        head: "Sombrero de sol ligero 👒",
+        torso: "Polera de algodón 👕",
+        legs: "Short veraniego 🩳",
+        feet: "Zapatillas deportivas 👟",
+        extras: ["Repelente de insectos 🦟", "Impermeable de lluvia 🧥", "Cantimplora con agua 💧"]
+      },
+      evaluation: (equipped: any) => {
+        let score = 0;
+        let reasons = [];
+
+        if (equipped.head === "Sombrero de sol ligero 👒") { score += 20; } else { reasons.push("⚠️ Tu cabeza necesita protección ligera del sol húmedo."); }
+        if (equipped.torso === "Polera de algodón 👕") { score += 20; } else { reasons.push("⚠️ El torso debe estar fresco en este clima tropical caluroso."); }
+        if (equipped.legs === "Short veraniego 🩳" || equipped.legs === "Jeans cómodos 👖") { score += 20; } else { reasons.push("⚠️ La ropa de pierna debe permitirte caminar cómodo en la humedad."); }
+        if (equipped.feet === "Zapatillas deportivas 👟") { score += 20; } else if (equipped.feet === "Chalas veraniegas 🩴") { reasons.push("⚠️ ¡Peligro! Las chalas no protegen tus pies del lodo y las alimañas del suelo."); } else { reasons.push("⚠️ Necesitas zapatillas cerradas cómodas."); }
+        
+        const hasRepellent = equipped.extras.includes("Repelente de insectos 🦟");
+        const hasRaincoat = equipped.extras.includes("Impermeable de lluvia 🧥");
+        if (hasRepellent && hasRaincoat) { score += 20; } else { reasons.push("⚠️ ¡Cuidado! Olvidaste protegerte de los mosquitos o de la intensa lluvia tropical."); }
+
+        return { score, reasons };
+      }
+    },
+    {
+      id: 3,
+      name: "Paseo por el Valle Central de Chile 🌳",
+      zone: "temperate",
+      desc: "Clima templado cambiante (18°C) con llovizna ocasional de media estación.",
+      requirements: {
+        head: "Ninguno",
+        torso: "Cortavientos ligero 🧥",
+        legs: "Jeans cómodos 👖",
+        feet: "Zapatillas deportivas 👟",
+        extras: ["Paraguas ☔", "Cantimplora con agua 💧"]
+      },
+      evaluation: (equipped: any) => {
+        let score = 0;
+        let reasons = [];
+
+        score += 20;
+        if (equipped.torso === "Cortavientos ligero 🧥") { score += 20; } else if (equipped.torso === "Parka térmica gruesa 🧥") { reasons.push("⚠️ La parka térmica es muy abrigada para 18°C."); } else { reasons.push("⚠️ Necesitas una chaqueta intermedia para protegerte de la brisa templada."); }
+        if (equipped.legs === "Jeans cómodos 👖") { score += 20; } else { reasons.push("⚠️ Los shorts te dejarán desprotegido si baja la temperatura por la tarde."); }
+        if (equipped.feet === "Zapatillas deportivas 👟") { score += 20; } else { reasons.push("⚠️ Calzado cerrado cómodo es ideal para caminar por el valle."); }
+        
+        const hasUmbrella = equipped.extras.includes("Paraguas ☔");
+        if (hasUmbrella) { score += 20; } else { reasons.push("⚠️ ¡Sorpresa! Si empieza a lloviznar te mojarás por no llevar paraguas."); }
+
+        return { score, reasons };
+      }
+    },
+    {
+      id: 4,
+      name: "Exploración a la Alta Cordillera 🏔️",
+      zone: "temperate",
+      desc: "Alta montaña con clima frío de altura (menos de 5°C), viento fuerte y nieve en las cumbres.",
+      requirements: {
+        head: "Gorro de lana polar 🧦",
+        torso: "Parka térmica gruesa 🧥",
+        legs: "Pantalón térmico 👖",
+        feet: "Botas de nieve 🥾",
+        extras: ["Gafas de esquí 🥽", "Cantimplora con agua 💧"]
+      },
+      evaluation: (equipped: any) => {
+        let score = 0;
+        let reasons = [];
+
+        if (equipped.head === "Gorro de lana polar 🧦") { score += 20; } else { reasons.push("⚠️ Perderás calor por la cabeza. ¡Se necesita gorro abrigador!"); }
+        if (equipped.torso === "Parka térmica gruesa 🧥") { score += 20; } else { reasons.push("⚠️ Un torso desprotegido en la cordillera puede provocar hipotermia."); }
+        if (equipped.legs === "Pantalón térmico 👖") { score += 20; } else { reasons.push("⚠️ Se requieren pantalones gruesos y abrigados."); }
+        if (equipped.feet === "Botas de nieve 🥾") { score += 20; } else { reasons.push("⚠️ Calzado con tracción y aislamiento es obligatorio en la nieve."); }
+        
+        const hasGoggles = equipped.extras.includes("Gafas de esquí 🥽");
+        if (hasGoggles) { score += 20; } else { reasons.push("⚠️ ¡La ceguera de la nieve es peligrosa! Necesitas gafas de esquí para la radiación blanca."); }
+
+        return { score, reasons };
+      }
+    },
+    {
+      id: 5,
+      name: "Investigación en la Antártica 🧊",
+      zone: "cold",
+      desc: "Zona Fría polar. Temperaturas extremas bajo cero (-25°C), ventiscas heladas y glaciares gigantes.",
+      requirements: {
+        head: "Gorro de lana polar 🧦",
+        torso: "Parka térmica gruesa 🧥",
+        legs: "Pantalón térmico 👖",
+        feet: "Botas de nieve 🥾",
+        extras: ["Gafas de esquí 🥽", "Cantimplora con agua 💧"]
+      },
+      evaluation: (equipped: any) => {
+        let score = 0;
+        let reasons = [];
+
+        if (equipped.head === "Gorro de lana polar 🧦") { score += 20; } else { reasons.push("⚠️ ¡El viento polar te congelará las orejas! Ponte el gorro térmico."); }
+        if (equipped.torso === "Parka térmica gruesa 🧥") { score += 20; } else { reasons.push("⚠️ ¡Vital! En la Antártica es obligatoria la parka impermeable y aislante."); }
+        if (equipped.legs === "Pantalón térmico 👖") { score += 20; } else { reasons.push("⚠️ Los shorts o jeans delgados congelarán tus piernas."); }
+        if (equipped.feet === "Botas de nieve 🥾") { score += 20; } else { reasons.push("⚠️ ¡Tus pies sufrirán congelamiento con zapatillas normales o chalas!"); }
+        
+        const hasGoggles = equipped.extras.includes("Gafas de esquí 🥽");
+        if (hasGoggles) { score += 20; } else { reasons.push("⚠️ Necesitas gafas polarizadas de esquí frente al reflejo cegador del hielo."); }
+
+        return { score, reasons };
+      }
+    }
+  ];
+
+  const items = {
+    head: [
+      { name: "Sombrero de sol ligero 👒", type: "head", label: "Sombrero de Sol" },
+      { name: "Gorro de lana polar 🧦", type: "head", label: "Gorro Térmico" },
+      { name: "Ninguno", type: "head", label: "Sin Sombrero" }
+    ],
+    torso: [
+      { name: "Polera de algodón 👕", type: "torso", label: "Polera Ligera" },
+      { name: "Cortavientos ligero 🧥", type: "torso", label: "Chaqueta Cortavientos" },
+      { name: "Parka térmica gruesa 🧥", type: "torso", label: "Parka Extrema" }
+    ],
+    legs: [
+      { name: "Short veraniego 🩳", type: "legs", label: "Pantalón Corto" },
+      { name: "Jeans cómodos 👖", type: "legs", label: "Pantalones Mezclilla" },
+      { name: "Pantalón térmico 👖", type: "legs", label: "Pantalón Nieve" }
+    ],
+    feet: [
+      { name: "Chalas veraniegas 🩴", type: "feet", label: "Sandalias Abiertas" },
+      { name: "Zapatillas deportivas 👟", type: "feet", label: "Zapatillas Cómodas" },
+      { name: "Botas de nieve 🥾", type: "feet", label: "Botas de Nieve" }
+    ],
+    extras: [
+      { name: "Bloqueador solar 🧴", type: "extras", label: "Bloqueador Solar" },
+      { name: "Gafas de sol 🕶️", type: "extras", label: "Gafas de Sol" },
+      { name: "Cantimplora con agua 💧", type: "extras", label: "Cantimplora" },
+      { name: "Repelente de insectos 🦟", type: "extras", label: "Repelente Mosquitos" },
+      { name: "Impermeable de lluvia 🧥", type: "extras", label: "Poncho Lluvia" },
+      { name: "Paraguas ☔", type: "extras", label: "Paraguas Compacto" },
+      { name: "Gafas de esquí 🥽", type: "extras", label: "Gafas de Nieve" }
+    ]
+  };
+
+  const [currentMissionIdx, setCurrentMissionIdx] = useState(0);
+  const [equipped, setEquipped] = useState({
+    head: "Ninguno",
+    torso: "Polera de algodón 👕",
+    legs: "Jeans cómodos 👖",
+    feet: "Zapatillas deportivas 👟",
+    extras: [] as string[]
+  });
+  const [showResult, setShowResult] = useState(false);
+  const [score, setScore] = useState(0);
+  const [reasons, setReasons] = useState<string[]>([]);
+
+  const handleEquip = (category: string, itemName: string) => {
+    if (category === "extras") {
+      setEquipped(prev => {
+        const alreadyHas = prev.extras.includes(itemName);
+        let newExtras = [];
+        if (alreadyHas) {
+          newExtras = prev.extras.filter(x => x !== itemName);
+        } else {
+          if (prev.extras.length >= 3) {
+            newExtras = [...prev.extras.slice(1), itemName];
+          } else {
+            newExtras = [...prev.extras, itemName];
+          }
+        }
+        return { ...prev, extras: newExtras };
+      });
+    } else {
+      setEquipped(prev => ({ ...prev, [category]: itemName }));
+    }
+  };
+
+  const runExpedition = () => {
+    const mission = missions[currentMissionIdx];
+    const { score, reasons } = mission.evaluation(equipped);
+    setScore(score);
+    setReasons(reasons);
+    setShowResult(true);
+  };
+
+  const changeMission = () => {
+    setCurrentMissionIdx(prev => (prev + 1) % missions.length);
+    setShowResult(false);
+  };
+
+  const mission = missions[currentMissionIdx];
+
+  return (
+    <div className="bg-[#fffbeb] border border-amber-100 rounded-[32px] p-6 md:p-10 relative overflow-hidden">
+      <div className="grid md:grid-cols-2 gap-8 items-stretch">
+        
+        <div className="bg-white rounded-2xl p-6 border border-amber-50 shadow-sm flex flex-col justify-between">
+          <div className="text-left">
+            <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-4 inline-block">
+              🗺️ Destino de Exploración
+            </span>
+            <h3 className="text-xl md:text-2xl font-serif font-bold text-gray-900 mb-2">
+              {mission.name}
+            </h3>
+            <p className="text-xs text-gray-500 font-light leading-relaxed mb-6">
+              {mission.desc}
+            </p>
+
+            <div className="bg-amber-50/50 border border-amber-100/60 rounded-2xl p-6 flex flex-col items-center justify-center relative min-h-[220px]">
+              <div className="text-6xl mb-4 animate-bounce">🤠</div>
+              <h4 className="text-sm font-bold text-amber-900 mb-4">Juanpi el Explorador</h4>
+              
+              <div className="grid grid-cols-2 gap-3 w-full text-xs text-gray-700 font-semibold bg-white p-4 rounded-xl border border-amber-100 text-left">
+                <div>🧢 Cabeza: <span className="font-light text-gray-600 block">{equipped.head}</span></div>
+                <div>🧥 Torso: <span className="font-light text-gray-600 block">{equipped.torso}</span></div>
+                <div>👖 Piernas: <span className="font-light text-gray-600 block">{equipped.legs}</span></div>
+                <div>👟 Pies: <span className="font-light text-gray-600 block">{equipped.feet}</span></div>
+              </div>
+
+              <div className="w-full mt-3 text-xs text-gray-700 font-semibold bg-white p-3 rounded-xl border border-amber-100 text-center">
+                🎒 Accesorios en Mochila (Máx 3):
+                <div className="flex flex-wrap gap-1.5 justify-center mt-1.5 min-h-[24px]">
+                  {equipped.extras.length === 0 ? (
+                    <span className="text-[10px] text-gray-400 font-light italic">¡Mochila Vacía!</span>
+                  ) : (
+                    equipped.extras.map((ex, i) => (
+                      <span key={i} className="px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-md text-[10px]">
+                        {ex}
+                      </span>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={changeMission}
+              className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition-all active:scale-95 cursor-pointer"
+            >
+              Cambiar Destino 🔄
+            </button>
+            <button
+              onClick={runExpedition}
+              className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl text-xs transition-all active:scale-95 cursor-pointer shadow-sm"
+            >
+              ¡Iniciar Expedición! 🚀
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 border border-amber-50 shadow-sm flex flex-col justify-between text-left">
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-serif font-bold text-gray-900 mb-1">
+                👕 El Guardarropa Climático
+              </h3>
+              <p className="text-[10px] text-gray-400 uppercase tracking-widest font-extrabold mb-4">
+                Toca las prendas para vestir a tu explorador
+              </p>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-amber-900 font-extrabold uppercase tracking-wider block mb-2">👒 Gorros y Sombreros:</span>
+              <div className="flex flex-wrap gap-2">
+                {items.head.map((it, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleEquip("head", it.name)}
+                    className={`px-3 py-1.5 border rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      equipped.head === it.name
+                        ? "bg-amber-100 border-amber-400 text-amber-900"
+                        : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {it.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-amber-900 font-extrabold uppercase tracking-wider block mb-2">👕 Abrigo y Torso:</span>
+              <div className="flex flex-wrap gap-2">
+                {items.torso.map((it, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleEquip("torso", it.name)}
+                    className={`px-3 py-1.5 border rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      equipped.torso === it.name
+                        ? "bg-amber-100 border-amber-400 text-amber-900"
+                        : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {it.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-amber-900 font-extrabold uppercase tracking-wider block mb-2">👖 Pantalones:</span>
+              <div className="flex flex-wrap gap-2">
+                {items.legs.map((it, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleEquip("legs", it.name)}
+                    className={`px-3 py-1.5 border rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      equipped.legs === it.name
+                        ? "bg-amber-100 border-amber-400 text-amber-900"
+                        : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {it.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-amber-900 font-extrabold uppercase tracking-wider block mb-2">👟 Zapatos:</span>
+              <div className="flex flex-wrap gap-2">
+                {items.feet.map((it, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleEquip("feet", it.name)}
+                    className={`px-3 py-1.5 border rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      equipped.feet === it.name
+                        ? "bg-amber-100 border-amber-400 text-amber-900"
+                        : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {it.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-amber-900 font-extrabold uppercase tracking-wider block mb-2">🎒 Accesorios (Elige hasta 3):</span>
+              <div className="flex flex-wrap gap-2">
+                {items.extras.map((it, i) => {
+                  const isSelected = equipped.extras.includes(it.name);
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => handleEquip("extras", it.name)}
+                      className={`px-3 py-1.5 border rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-amber-100 border-amber-400 text-amber-900"
+                          : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                      }`}
+                    >
+                      {it.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <AnimatePresence>
+        {showResult && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full border border-amber-100 shadow-2xl relative"
+            >
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-amber-100 border border-amber-300 rounded-full flex items-center justify-center text-4xl mb-4 mx-auto animate-bounce">
+                  🧭
+                </div>
+                <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-2 inline-block">
+                  Evaluación de Supervivencia
+                </span>
+                <h3 className="text-lg md:text-xl font-serif font-bold text-gray-900">
+                  Resultado de la Misión
+                </h3>
+              </div>
+
+              <div className="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100 text-center">
+                <span className="text-xs uppercase tracking-widest text-gray-400 font-extrabold block mb-1">Puntaje de Acomodación</span>
+                <span className="text-3xl font-black text-amber-600">{score}%</span>
+                
+                <div className="w-full h-3.5 bg-gray-200 rounded-full overflow-hidden mt-2.5">
+                  <motion.div
+                    className={`h-full bg-gradient-to-r ${score >= 80 ? "from-emerald-400 to-green-500" : score >= 50 ? "from-yellow-400 to-amber-500" : "from-red-400 to-pink-500"}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${score}%` }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+              </div>
+
+              <div className="mb-6 max-h-[160px] overflow-y-auto space-y-2 text-xs font-light text-gray-700 leading-relaxed text-left bg-gray-50/50 p-3 rounded-xl border border-gray-100">
+                {score === 100 ? (
+                  <div className="text-emerald-800 font-semibold text-center flex flex-col items-center gap-2 py-4">
+                    <span>🌟 ¡EXPEDICIÓN PERFECTA! 🌟</span>
+                    <span className="font-light text-gray-700">Juanpi está excelentemente preparado para el clima. Su vestimenta y accesorios equilibran frescura, protección solar, hidratación y aislamiento térmico según amerite el destino. ¡Eres un meteorólogo de nivel doctoral!</span>
+                  </div>
+                ) : (
+                  <div>
+                    <span className="font-bold text-amber-900 block mb-2">Consejos del Guía del Clima:</span>
+                    <ul className="space-y-2">
+                      {reasons.map((re, idx) => (
+                        <li key={idx} className="flex gap-2 items-start">
+                          <span>{re}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowResult(false)}
+                  className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition-all active:scale-95 cursor-pointer"
+                >
+                  Modificar Ropa 👕
+                </button>
+                {score < 100 && (
+                  <button
+                    onClick={() => {
+                      const req = mission.requirements;
+                      setEquipped({
+                        head: req.head || "Ninguno",
+                        torso: req.torso,
+                        legs: req.legs,
+                        feet: req.feet,
+                        extras: req.extras
+                      });
+                      setShowResult(false);
+                    }}
+                    className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs transition-all active:scale-95 cursor-pointer"
+                  >
+                    Auto-Vestir Perfecto 🧥
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const ExplorerGamesHub = () => {
-  const [activeTab, setActiveTab] = useState<"board" | "memorize">("board");
+  const [activeTab, setActiveTab] = useState<"board" | "memorize" | "dressup">("board");
 
   return (
     <div className="my-24 max-w-6xl mx-auto px-6 md:px-12">
@@ -1385,16 +1873,16 @@ const ExplorerGamesHub = () => {
           Academia de Súper Exploradores
         </h2>
         <p className="text-gray-600 font-light max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
-          ¡Aprende y pon a prueba tu ingenio! Elige entre dos misiones interactivas diseñadas especialmente para desafiar tus conocimientos geográficos.
+          ¡Aprende y pon a prueba tu ingenio! Elige entre tres misiones interactivas diseñadas especialmente para desafiar tus conocimientos geográficos.
         </p>
 
         {/* Tab Selector */}
-        <div className="flex justify-center gap-4 mt-8 bg-white p-2 rounded-2xl border border-gray-200 max-w-md mx-auto shadow-sm">
+        <div className="flex justify-center gap-4 mt-8 bg-white p-2 rounded-2xl border border-gray-200 max-w-lg mx-auto shadow-sm">
           <button
             onClick={() => setActiveTab("board")}
-            className={`flex-1 py-3 px-6 rounded-xl font-extrabold text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 ${
+            className={`flex-1 py-3 px-4 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 ${
               activeTab === "board"
-                ? "bg-yellow-400 text-gray-950 shadow-md animate-pulse-subtle"
+                ? "bg-yellow-400 text-gray-950 shadow-md"
                 : "text-gray-500 hover:text-gray-950"
             }`}
           >
@@ -1402,13 +1890,23 @@ const ExplorerGamesHub = () => {
           </button>
           <button
             onClick={() => setActiveTab("memorize")}
-            className={`flex-1 py-3 px-6 rounded-xl font-extrabold text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 ${
+            className={`flex-1 py-3 px-4 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 ${
               activeTab === "memorize"
                 ? "bg-blue-600 text-white shadow-md"
                 : "text-gray-500 hover:text-gray-950"
             }`}
           >
             🃏 Memorice Relacional
+          </button>
+          <button
+            onClick={() => setActiveTab("dressup")}
+            className={`flex-1 py-3 px-4 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 ${
+              activeTab === "dressup"
+                ? "bg-amber-500 text-white shadow-md"
+                : "text-gray-500 hover:text-gray-950"
+            }`}
+          >
+            🧥 Vestidor Climático
           </button>
         </div>
       </div>
@@ -1421,7 +1919,13 @@ const ExplorerGamesHub = () => {
           exit={{ opacity: 0, y: -15 }}
           transition={{ duration: 0.3 }}
         >
-          {activeTab === "board" ? <ClimaticBoardGame /> : <ClimaticMemorizeGame />}
+          {activeTab === "board" ? (
+            <ClimaticBoardGame />
+          ) : activeTab === "memorize" ? (
+            <ClimaticMemorizeGame />
+          ) : (
+            <ClimaticDressingSimulator />
+          )}
         </motion.div>
       </AnimatePresence>
     </div>
