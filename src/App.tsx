@@ -2996,8 +2996,332 @@ const ClimaticCrosswordGame = () => {
   );
 };
 
+// --- Juego 5: Sopa de Letras Climática ---
+const ClimaticWordSearchGame = () => {
+  const WORD_LIST = [
+    { id: "CALIDA", word: "CALIDA", label: "CÁLIDA", icon: "☀️", clue: "Zona donde los rayos del Sol llegan directos y hace calor." },
+    { id: "TEMPLADA", word: "TEMPLADA", label: "TEMPLADA", icon: "🍃", clue: "Zona con estaciones del año muy marcadas y clima moderado." },
+    { id: "FRIA", word: "FRIA", label: "FRÍA", icon: "❄️", clue: "Zona de bajas temperaturas cerca de los polos norte y sur." },
+    { id: "DESIERTO", word: "DESIERTO", label: "DESIERTO", icon: "🌵", clue: "Clima extremadamente seco de la zona cálida con arena y cactus." },
+    { id: "SELVA", word: "SELVA", label: "SELVA", icon: "🌴", clue: "Bosque tropical muy húmedo y lluvioso lleno de animales." },
+    { id: "POLAR", word: "POLAR", label: "POLAR", icon: "🧊", clue: "Clima extremadamente helado típico de los polos de la Tierra." },
+    { id: "SOL", word: "SOL", label: "SOL", icon: "☀️", clue: "Nuestra estrella que entrega luz y calor a todas las zonas climáticas." },
+    { id: "LLUVIA", word: "LLUVIA", label: "LLUVIA", icon: "💧", clue: "Precipitación de agua líquida fundamental para la vida silvestre." }
+  ];
+
+  const GRID = [
+    ['C', 'A', 'L', 'I', 'D', 'A', 'X', 'P', 'Q', 'Z', 'W'],
+    ['Y', 'R', 'O', 'B', 'M', 'C', 'V', 'K', 'T', 'D', 'L'],
+    ['T', 'E', 'M', 'P', 'L', 'A', 'D', 'A', 'N', 'E', 'B'],
+    ['X', 'W', 'J', 'U', 'A', 'N', 'P', 'I', 'G', 'S', 'U'],
+    ['M', 'K', 'F', 'R', 'I', 'A', 'L', 'O', 'R', 'I', 'K'],
+    ['L', 'H', 'Y', 'C', 'B', 'G', 'Z', 'U', 'M', 'E', 'O'],
+    ['L', 'S', 'E', 'L', 'V', 'A', 'W', 'V', 'N', 'R', 'P'],
+    ['U', 'N', 'K', 'R', 'M', 'P', 'T', 'D', 'Q', 'T', 'F'],
+    ['V', 'A', 'J', 'P', 'O', 'L', 'A', 'R', 'C', 'O', 'Y'],
+    ['I', 'F', 'Q', 'X', 'B', 'Z', 'U', 'K', 'M', 'L', 'W'],
+    ['A', 'R', 'T', 'I', 'C', 'O', 'S', 'O', 'L', 'P', 'G']
+  ];
+
+  const [foundWords, setFoundWords] = useState<string[]>([]);
+  const [selectedStart, setSelectedStart] = useState<{ r: number; c: number } | null>(null);
+  const [selectedEnd, setSelectedEnd] = useState<{ r: number; c: number } | null>(null);
+  const [showVictory, setShowVictory] = useState(false);
+
+  const handleCellClick = (r: number, c: number) => {
+    soundFX.playClick();
+    if (!selectedStart) {
+      setSelectedStart({ r, c });
+      setSelectedEnd(null);
+    } else {
+      if (selectedStart.r === r && selectedStart.c === c) {
+        setSelectedStart(null);
+        setSelectedEnd(null);
+        return;
+      }
+
+      if (selectedStart.r !== r && selectedStart.c !== c) {
+        soundFX.playFailure();
+        setSelectedStart(null);
+        setSelectedEnd(null);
+        return;
+      }
+
+      const minR = Math.min(selectedStart.r, r);
+      const maxR = Math.max(selectedStart.r, r);
+      const minC = Math.min(selectedStart.c, c);
+      const maxC = Math.max(selectedStart.c, c);
+
+      let wordAttempt = "";
+
+      if (selectedStart.r === r) {
+        for (let col = minC; col <= maxC; col++) {
+          wordAttempt += GRID[r][col];
+        }
+      } else {
+        for (let row = minR; row <= maxR; row++) {
+          wordAttempt += GRID[row][c];
+        }
+      }
+
+      const wordAttemptReversed = wordAttempt.split("").reverse().join("");
+
+      const foundWord = WORD_LIST.find(
+        (w) =>
+          !foundWords.includes(w.id) &&
+          (w.word === wordAttempt || w.word === wordAttemptReversed)
+      );
+
+      if (foundWord) {
+        const nextFoundWords = [...foundWords, foundWord.id];
+        setFoundWords(nextFoundWords);
+        soundFX.playSuccess();
+
+        if (nextFoundWords.length === WORD_LIST.length) {
+          setTimeout(() => {
+            setShowVictory(true);
+            soundFX.playVictory();
+          }, 600);
+        }
+      } else {
+        soundFX.playFailure();
+      }
+
+      setSelectedStart(null);
+      setSelectedEnd(null);
+    }
+  };
+
+  const handleCellHover = (r: number, c: number) => {
+    if (selectedStart) {
+      if (selectedStart.r === r || selectedStart.c === c) {
+        setSelectedEnd({ r, c });
+      } else {
+        setSelectedEnd(null);
+      }
+    }
+  };
+
+  const isCellSelected = (r: number, c: number) => {
+    if (!selectedStart) return false;
+    if (selectedStart.r === r && selectedStart.c === c) return true;
+    if (!selectedEnd) return false;
+
+    const minR = Math.min(selectedStart.r, selectedEnd.r);
+    const maxR = Math.max(selectedStart.r, selectedEnd.r);
+    const minC = Math.min(selectedStart.c, selectedEnd.c);
+    const maxC = Math.max(selectedStart.c, selectedEnd.c);
+
+    if (selectedStart.r === selectedEnd.r) {
+      return r === selectedStart.r && c >= minC && c <= maxC;
+    }
+    if (selectedStart.c === selectedEnd.c) {
+      return c === selectedStart.c && r >= minR && r <= maxR;
+    }
+    return false;
+  };
+
+  const isCellFound = (r: number, c: number) => {
+    if (foundWords.includes("CALIDA") && r === 0 && c >= 0 && c <= 5) return true;
+    if (foundWords.includes("TEMPLADA") && r === 2 && c >= 0 && c <= 7) return true;
+    if (foundWords.includes("FRIA") && r === 4 && c >= 2 && c <= 5) return true;
+    if (foundWords.includes("DESIERTO") && c === 9 && r >= 1 && r <= 8) return true;
+    if (foundWords.includes("SELVA") && r === 6 && c >= 1 && c <= 5) return true;
+    if (foundWords.includes("POLAR") && r === 8 && c >= 3 && c <= 7) return true;
+    if (foundWords.includes("SOL") && r === 10 && c >= 6 && c <= 8) return true;
+    if (foundWords.includes("LLUVIA") && c === 0 && r >= 5 && r <= 10) return true;
+
+    return false;
+  };
+
+  const resetGame = () => {
+    soundFX.playClick();
+    setFoundWords([]);
+    setSelectedStart(null);
+    setSelectedEnd(null);
+    setShowVictory(false);
+  };
+
+  const autoSolve = () => {
+    soundFX.playClick();
+    const allIds = WORD_LIST.map((w) => w.id);
+    setFoundWords(allIds);
+    setShowVictory(true);
+    soundFX.playVictory();
+  };
+
+  return (
+    <div className="bg-[#fff1f2] border border-rose-100 rounded-[32px] p-6 md:p-10 relative overflow-hidden">
+      <div className="grid md:grid-cols-12 gap-8 items-stretch">
+        
+        {/* Panel Izquierdo: Cuadrícula */}
+        <div className="md:col-span-7 bg-white rounded-2xl p-4 md:p-6 border border-rose-50 shadow-sm flex flex-col justify-between items-center">
+          <div className="w-full text-center mb-4">
+            <span className="bg-rose-100 text-rose-800 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-2 inline-block">
+              🔍 Encuentra y Aprende
+            </span>
+            <h3 className="text-xl md:text-2xl font-serif font-bold text-gray-900 mb-1">
+              Sopa de Letras Climática
+            </h3>
+            <p className="text-xs text-gray-500 font-light max-w-md mx-auto leading-relaxed">
+              Haz clic en la letra de inicio y luego en la letra final de la palabra. ¡Busca en horizontal y vertical!
+            </p>
+          </div>
+
+          <div className="bg-rose-50/50 p-3 rounded-2xl border border-rose-100/50 w-full max-w-[440px] aspect-square grid grid-cols-11 gap-1 md:gap-1.5 touch-none select-none">
+            {GRID.map((row, rIdx) =>
+              row.map((char, cIdx) => {
+                const selected = isCellSelected(rIdx, cIdx);
+                const found = isCellFound(rIdx, cIdx);
+                return (
+                  <button
+                    key={`${rIdx}-${cIdx}`}
+                    onClick={() => handleCellClick(rIdx, cIdx)}
+                    onMouseEnter={() => handleCellHover(rIdx, cIdx)}
+                    className={`aspect-square w-full rounded-lg text-xs md:text-sm font-bold flex items-center justify-center transition-all cursor-pointer select-none active:scale-95 ${
+                      found
+                        ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/20 font-black scale-105"
+                        : selected
+                        ? "bg-rose-500 text-white font-black animate-pulse"
+                        : "bg-white hover:bg-rose-100 text-gray-800 border border-rose-100/40"
+                    }`}
+                  >
+                    {char}
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          <div className="flex gap-3 w-full mt-4 justify-center">
+            <button
+              onClick={resetGame}
+              className="px-4 py-2 border border-rose-200 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-50 active:scale-95 transition-all cursor-pointer"
+            >
+              🔄 Reiniciar
+            </button>
+            <button
+              onClick={autoSolve}
+              className="px-4 py-2 bg-rose-100 text-rose-800 font-bold rounded-xl text-xs hover:bg-rose-200 active:scale-95 transition-all cursor-pointer"
+            >
+              🪄 Resolver
+            </button>
+          </div>
+        </div>
+
+        {/* Panel Derecho: Lista */}
+        <div className="md:col-span-5 flex flex-col justify-between bg-white rounded-2xl p-6 border border-rose-50 shadow-sm text-left">
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="font-extrabold text-gray-900 text-sm tracking-wide">
+                LISTA DE PALABRAS
+              </h4>
+              <span className="text-xs font-black text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full">
+                {foundWords.length} / {WORD_LIST.length} encontradas
+              </span>
+            </div>
+
+            <div className="w-full h-2 bg-gray-100 rounded-full mb-6 overflow-hidden">
+              <div 
+                className="h-full bg-emerald-500 transition-all duration-500 rounded-full" 
+                style={{ width: `${(foundWords.length / WORD_LIST.length) * 100}%` }}
+              />
+            </div>
+
+            <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+              {WORD_LIST.map((w) => {
+                const found = foundWords.includes(w.id);
+                return (
+                  <div
+                    key={w.id}
+                    className={`flex flex-col gap-1 p-3 rounded-xl border transition-all duration-300 ${
+                      found
+                        ? "bg-emerald-50/60 border-emerald-200/60"
+                        : "bg-gray-50/50 border-gray-200/50 hover:bg-rose-50/20"
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-xs md:text-sm text-gray-800 flex items-center gap-1.5">
+                        <span className="text-base">{w.icon}</span>
+                        <span className={found ? "line-through text-gray-400" : ""}>{w.label}</span>
+                      </span>
+                      {found ? (
+                        <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-black uppercase">
+                          ¡Hallada!
+                        </span>
+                      ) : (
+                        <span className="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full font-bold uppercase">
+                          Buscando
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-gray-500 font-light leading-relaxed">
+                      {w.clue}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Pantalla de Victoria */}
+      <AnimatePresence>
+        {showVictory && (
+          <motion.div 
+            className="absolute inset-0 bg-[#fff1f2]/95 backdrop-blur-md z-30 flex items-center justify-center p-6 text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="bg-white max-w-md w-full rounded-[40px] p-8 md:p-10 shadow-2xl relative border-8 border-rose-500/20 overflow-hidden"
+              initial={{ scale: 0.9, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 50 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-rose-200/40 via-transparent to-transparent pointer-events-none" />
+              
+              <div className="text-7xl mb-4 animate-bounce">🏆🔍</div>
+              
+              <span className="bg-rose-100 text-rose-800 text-xs font-black uppercase px-4 py-1.5 rounded-full tracking-widest inline-block mb-3">
+                Gran Logro Climático
+              </span>
+              
+              <h3 className="text-2xl md:text-3xl font-serif font-black text-gray-900 leading-tight mb-2">
+                ¡Felicidades, Súper Descubridor Juanpi!
+              </h3>
+              
+              <p className="text-gray-600 font-light leading-relaxed mb-6 text-xs md:text-sm">
+                Has encontrado todas las palabras de la Tierra y sus climas en la Sopa de Letras. ¡Tus habilidades geográficas son asombrosas!
+              </p>
+
+              <div className="bg-rose-50 rounded-3xl p-5 border border-rose-100 text-left mb-6 text-xs font-bold text-rose-900 space-y-1.5">
+                <div className="text-center font-extrabold text-sm mb-2 uppercase tracking-wide">Diploma de Súper Explorador</div>
+                <div>👤 Nombre: <span className="font-light text-gray-700">Juanpi el Magnífico</span></div>
+                <div>📍 Academia: <span className="font-light text-gray-700">Exploradores de 3º Básico</span></div>
+                <div>🎓 Calificación: <span className="font-light text-gray-700">100% Excelente 🌟</span></div>
+              </div>
+              
+              <button
+                onClick={resetGame}
+                className="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white font-extrabold rounded-2.5xl transition-all active:scale-95 cursor-pointer shadow-lg shadow-rose-500/20 text-sm"
+              >
+                Volver a Jugar Sopa 🧭
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const ExplorerGamesHub = () => {
-  const [activeTab, setActiveTab] = useState<"board" | "memorize" | "dressup" | "paint" | "puzzle">("board");
+  const [activeTab, setActiveTab] = useState<"board" | "memorize" | "dressup" | "paint" | "puzzle" | "wordsearch">("board");
 
   return (
     <div id="juegos" className="my-24 max-w-6xl mx-auto px-6 md:px-12 scroll-mt-20">
@@ -3009,7 +3333,7 @@ const ExplorerGamesHub = () => {
           Academia de Súper Exploradores
         </h2>
         <p className="text-gray-600 font-light max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
-          ¡Aprende y pon a prueba tu ingenio! Elige entre cinco misiones interactivas diseñadas especialmente para desafiar tus conocimientos geográficos.
+          ¡Aprende y pon a prueba tu ingenio! Elige entre seis misiones interactivas diseñadas especialmente para desafiar tus conocimientos geográficos.
         </p>
 
         {/* Tab Selector */}
@@ -3064,6 +3388,16 @@ const ExplorerGamesHub = () => {
           >
             🧩 Crucigrama
           </button>
+          <button
+            onClick={() => { setActiveTab("wordsearch"); soundFX.playClick(); }}
+            className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
+              activeTab === "wordsearch"
+                ? "bg-rose-500 text-white shadow-md"
+                : "text-gray-500 hover:text-gray-950"
+            }`}
+          >
+            🔍 Sopa
+          </button>
         </div>
       </div>
 
@@ -3083,8 +3417,10 @@ const ExplorerGamesHub = () => {
             <ClimaticDressingSimulator />
           ) : activeTab === "paint" ? (
             <ClimaticMapPainter />
-          ) : (
+          ) : activeTab === "puzzle" ? (
             <ClimaticCrosswordGame />
+          ) : (
+            <ClimaticWordSearchGame />
           )}
         </motion.div>
       </AnimatePresence>
