@@ -250,6 +250,161 @@ const PackingInteractive = () => {
     );
 }
 
+const PolarGearInteractive = () => {
+  const allGear = [
+    { id: "parka", name: "Parka Extrema 🧥", isCorrect: true, desc: "Abrigo térmico e impermeable. ¡Mantiene el calor del cuerpo a salvo del viento polar!", packed: false },
+    { id: "boots", name: "Botas de Nieve 🥾", isCorrect: true, desc: "Aislantes y con suela gruesa para caminar sobre el hielo sin congelarte.", packed: false },
+    { id: "gloves", name: "Guantes Térmicos 🧤", isCorrect: true, desc: "Acolchados e impermeables. Tus manos se mantendrán calientes y secas.", packed: false },
+    { id: "beanie", name: "Gorro de Lana 🧣", isCorrect: true, desc: "Esencial, ya que gran parte del calor corporal se escapa por la cabeza.", packed: false },
+    { id: "goggles", name: "Gafas de Nieve 🥽", isCorrect: true, desc: "Protegen tus ojos del reflejo solar extremo sobre el hielo blanco.", packed: false },
+    { id: "shorts", name: "Shorts playeros 🩳", isCorrect: false, desc: "¡Cuidado! A -30°C tus piernas se congelarían en cuestión de segundos.", packed: false },
+    { id: "sandals", name: "Sandalias 🩴", isCorrect: false, desc: "¡No! En el hielo necesitas protección total. Tus dedos no aguantarían el frío.", packed: false },
+    { id: "swimsuit", name: "Traje de baño 🩱", isCorrect: false, desc: "¡Para nada! A menos que seas una foca, no querrás usar esto en los polos.", packed: false }
+  ];
+
+  const [gearList, setGearList] = useState(allGear);
+  const [packedCount, setPackedCount] = useState(0);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedbackType, setFeedbackType] = useState<"success" | "error" | null>(null);
+
+  const maxCorrect = allGear.filter(g => g.isCorrect).length;
+
+  const handleEquip = (id: string) => {
+    const item = gearList.find(g => g.id === id);
+    if (!item) return;
+
+    if (item.isCorrect) {
+      if (item.packed) {
+        setGearList(prev => prev.map(g => g.id === id ? { ...g, packed: false } : g));
+        setPackedCount(prev => prev - 1);
+        setFeedback(`Te has quitado la ${item.name.split(" ")[0]}. ¡Hace frío!`);
+        setFeedbackType("error");
+      } else {
+        setGearList(prev => prev.map(g => g.id === id ? { ...g, packed: true } : g));
+        setPackedCount(prev => prev + 1);
+        setFeedback(`¡Excelente! ${item.desc}`);
+        setFeedbackType("success");
+      }
+    } else {
+      setFeedback(`🚨 ¡Alerta de Congelación! ${item.desc}`);
+      setFeedbackType("error");
+    }
+  };
+
+  const isCompleted = packedCount === maxCorrect;
+
+  return (
+    <div className="bg-[#0f2444] rounded-[32px] p-6 md:p-10 text-white border border-blue-900/60 shadow-2xl relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/10 via-[#0f2444] to-[#0f2444] pointer-events-none"></div>
+      
+      <div className="relative z-10 grid md:grid-cols-2 gap-10 items-center">
+        <div>
+          <span className="inline-flex items-center gap-2 bg-blue-500/20 border border-blue-500/40 text-blue-300 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+            🧤 Minijuego de Supervivencia
+          </span>
+          <h3 className="text-3xl md:text-4xl font-serif font-bold mb-4 text-white">
+            Prepárate para la Expedición Polar
+          </h3>
+          <p className="text-blue-200/80 font-light mb-8 leading-relaxed text-sm md:text-base">
+            En los polos la temperatura puede bajar de los -40°C. Si no te vistes adecuadamente, ¡te congelarías! Selecciona únicamente las prendas correctas para completar tu traje de exploración.
+          </p>
+
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {gearList.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleEquip(item.id)}
+                className={`p-3 rounded-xl border text-left text-sm font-semibold transition-all duration-300 flex items-center justify-between cursor-pointer ${
+                  item.packed 
+                    ? "bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-emerald-950/20"
+                    : "bg-blue-950/40 border-blue-800/60 text-blue-200 hover:bg-blue-900/40"
+                }`}
+              >
+                <span>{item.name}</span>
+                {item.packed && <span className="text-emerald-400 text-xs">✓</span>}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-20 flex items-center">
+            <AnimatePresence mode="wait">
+              {feedback && (
+                <motion.div
+                  key={feedback}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className={`p-4 rounded-xl border text-sm font-light leading-relaxed w-full ${
+                    feedbackType === "success"
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-200"
+                      : "bg-red-500/10 border-red-500/30 text-red-200"
+                  }`}
+                >
+                  {feedback}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Suitcase / Character Preview */}
+        <div className="relative bg-blue-950/50 rounded-2xl p-6 border border-blue-900/60 flex flex-col items-center justify-center min-h-[350px]">
+          <img 
+            src="./polar_clothing.png" 
+            alt="Ropa Polar" 
+            className="w-full max-w-[280px] h-auto object-contain rounded-xl shadow-lg border border-blue-900/60 mb-6 bg-blue-900/20 p-2"
+          />
+          
+          <div className="w-full">
+            <div className="flex justify-between text-xs text-blue-300 uppercase tracking-widest font-bold mb-2">
+              <span>Progreso del Traje:</span>
+              <span>{packedCount} de {maxCorrect} prendas</span>
+            </div>
+            
+            <div className="w-full h-3 bg-blue-900/60 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-gradient-to-r from-blue-400 to-cyan-300"
+                animate={{ width: `${(packedCount / maxCorrect) * 100}%` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {isCompleted && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute inset-0 bg-slate-950/95 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center p-8 text-center border-2 border-emerald-500"
+              >
+                <div className="w-20 h-20 bg-emerald-500/20 border border-emerald-400 rounded-full flex items-center justify-center text-5xl mb-4 animate-bounce">
+                  🏆
+                </div>
+                <h4 className="text-2xl font-serif font-bold text-white mb-2">¡Listo para la Expedición!</h4>
+                <p className="text-emerald-300 text-sm mb-6 leading-relaxed max-w-xs font-light">
+                  ¡Excelente trabajo! Has seleccionado todo el equipamiento necesario para sobrevivir al viento y al frío extremo del Reino del Hielo.
+                </p>
+                <button
+                  onClick={() => {
+                    setGearList(allGear);
+                    setPackedCount(0);
+                    setFeedback(null);
+                    setFeedbackType(null);
+                  }}
+                  className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-950 font-bold rounded-xl text-sm transition-all cursor-pointer"
+                >
+                  Reiniciar Desafío
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
@@ -469,7 +624,7 @@ export default function App() {
             {/* Arctic Card */}
             <FadeIn delay={0.1}>
                <div className="relative group overflow-hidden rounded-[40px] h-[500px] cursor-crosshair border-4 border-blue-900/30">
-                <img src="https://images.unsplash.com/photo-1517409217116-24ba0da282d8?auto=format&fit=crop&w=1200&q=80" alt="Ártico" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                <img src="./arctic.png" alt="Ártico" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-blue-950/40 group-hover:bg-blue-950/70 transition-colors duration-500" />
                 
                 <div className="absolute inset-0 p-10 flex flex-col justify-end transform translate-y-12 group-hover:translate-y-0 transition-transform duration-500">
@@ -493,7 +648,7 @@ export default function App() {
             {/* Antarctic Card */}
             <FadeIn delay={0.2}>
                <div className="relative group overflow-hidden rounded-[40px] h-[500px] cursor-crosshair border-4 border-blue-900/30">
-                <img src="https://images.unsplash.com/photo-1518182170546-076616fdceac?auto=format&fit=crop&w=1200&q=80" alt="Antártica" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                <img src="./antarctic.png" alt="Antártica" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-blue-950/40 group-hover:bg-blue-950/70 transition-colors duration-500" />
                 
                 <div className="absolute inset-0 p-10 flex flex-col justify-end transform translate-y-12 group-hover:translate-y-0 transition-transform duration-500">
@@ -514,6 +669,12 @@ export default function App() {
               </div>
             </FadeIn>
           </div>
+
+          <FadeIn>
+            <div className="mt-16">
+              <PolarGearInteractive />
+            </div>
+          </FadeIn>
 
         </div>
       </section>
