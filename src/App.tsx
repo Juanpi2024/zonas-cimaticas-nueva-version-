@@ -3366,67 +3366,69 @@ const ExplorerGamesHub = () => {
         </p>
 
         {/* Tab Selector */}
-        <div className="flex justify-center gap-4 mt-8 bg-white p-2 rounded-2xl border border-gray-200 max-w-4xl mx-auto shadow-sm overflow-x-auto whitespace-nowrap">
-          <button
-            onClick={() => { setActiveTab("board"); soundFX.playClick(); }}
-            className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
-              activeTab === "board"
-                ? "bg-yellow-400 text-gray-950 shadow-md"
-                : "text-gray-500 hover:text-gray-950"
-            }`}
-          >
-            🎲 Tablero
-          </button>
-          <button
-            onClick={() => { setActiveTab("memorize"); soundFX.playClick(); }}
-            className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
-              activeTab === "memorize"
-                ? "bg-blue-600 text-white shadow-md"
-                : "text-gray-500 hover:text-gray-950"
-            }`}
-          >
-            🃏 Memorice
-          </button>
-          <button
-            onClick={() => { setActiveTab("dressup"); soundFX.playClick(); }}
-            className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
-              activeTab === "dressup"
-                ? "bg-amber-500 text-white shadow-md"
-                : "text-gray-500 hover:text-gray-950"
-            }`}
-          >
-            🧥 Vestidor
-          </button>
-          <button
-            onClick={() => { setActiveTab("paint"); soundFX.playClick(); }}
-            className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
-              activeTab === "paint"
-                ? "bg-green-600 text-white shadow-md"
-                : "text-gray-500 hover:text-gray-950"
-            }`}
-          >
-            🗺️ Pintar Mapa
-          </button>
-          <button
-            onClick={() => { setActiveTab("puzzle"); soundFX.playClick(); }}
-            className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
-              activeTab === "puzzle"
-                ? "bg-purple-600 text-white shadow-md"
-                : "text-gray-500 hover:text-gray-950"
-            }`}
-          >
-            🧩 Crucigrama
-          </button>
-          <button
-            onClick={() => { setActiveTab("wordsearch"); soundFX.playClick(); }}
-            className={`flex-1 py-3 px-3 rounded-xl font-extrabold text-xs md:text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
-              activeTab === "wordsearch"
-                ? "bg-rose-500 text-white shadow-md"
-                : "text-gray-500 hover:text-gray-950"
-            }`}
-          >
-            🔍 Sopa
-          </button>
+        <div className="mt-8 p-1.5 bg-slate-100/60 rounded-3xl border border-slate-200/40 max-w-4xl mx-auto shadow-sm overflow-x-auto whitespace-nowrap backdrop-blur-md">
+          <div className="flex justify-center gap-2 bg-white rounded-[calc(24px-0.375rem)] p-2">
+            <button
+              onClick={() => { setActiveTab("board"); soundFX.playClick(); }}
+              className={`flex-1 py-3 px-3 rounded-xl font-display font-bold text-xs md:text-sm transition-spring active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
+                activeTab === "board"
+                  ? "bg-yellow-400 text-gray-950 shadow-md scale-[1.02]"
+                  : "text-gray-500 hover:text-gray-950"
+              }`}
+            >
+              🎲 Tablero
+            </button>
+            <button
+              onClick={() => { setActiveTab("memorize"); soundFX.playClick(); }}
+              className={`flex-1 py-3 px-3 rounded-xl font-display font-bold text-xs md:text-sm transition-spring active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
+                activeTab === "memorize"
+                  ? "bg-blue-600 text-white shadow-md scale-[1.02]"
+                  : "text-gray-500 hover:text-gray-950"
+              }`}
+            >
+              🃏 Memorice
+            </button>
+            <button
+              onClick={() => { setActiveTab("dressup"); soundFX.playClick(); }}
+              className={`flex-1 py-3 px-3 rounded-xl font-display font-bold text-xs md:text-sm transition-spring active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
+                activeTab === "dressup"
+                  ? "bg-amber-500 text-white shadow-md scale-[1.02]"
+                  : "text-gray-500 hover:text-gray-950"
+              }`}
+            >
+              🧥 Vestidor
+            </button>
+            <button
+              onClick={() => { setActiveTab("paint"); soundFX.playClick(); }}
+              className={`flex-1 py-3 px-3 rounded-xl font-display font-bold text-xs md:text-sm transition-spring active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
+                activeTab === "paint"
+                  ? "bg-green-600 text-white shadow-md scale-[1.02]"
+                  : "text-gray-500 hover:text-gray-950"
+              }`}
+            >
+              🗺️ Pintar Mapa
+            </button>
+            <button
+              onClick={() => { setActiveTab("puzzle"); soundFX.playClick(); }}
+              className={`flex-1 py-3 px-3 rounded-xl font-display font-bold text-xs md:text-sm transition-spring active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
+                activeTab === "puzzle"
+                  ? "bg-purple-600 text-white shadow-md scale-[1.02]"
+                  : "text-gray-500 hover:text-gray-950"
+              }`}
+            >
+              🧩 Crucigrama
+            </button>
+            <button
+              onClick={() => { setActiveTab("wordsearch"); soundFX.playClick(); }}
+              className={`flex-1 py-3 px-3 rounded-xl font-display font-bold text-xs md:text-sm transition-spring active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${
+                activeTab === "wordsearch"
+                  ? "bg-rose-500 text-white shadow-md scale-[1.02]"
+                  : "text-gray-500 hover:text-gray-950"
+              }`}
+            >
+              🔍 Sopa
+            </button>
+          </div>
         </div>
       </div>
 
@@ -3483,7 +3485,12 @@ export default function App() {
   };
 
   return (
-    <div className="bg-[#f5f2ed] text-gray-900 font-sans selection:bg-orange-200 selection:text-orange-900 pb-20">
+    <div className="bg-[#faf8f5] text-gray-900 font-sans selection:bg-orange-200 selection:text-orange-900 pb-20 relative min-h-screen overflow-x-hidden">
+      
+      {/* Background Glowing Orbs */}
+      <div className="absolute top-[10%] left-[-15%] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-orange-400/10 to-rose-400/20 glow-orb" />
+      <div className="absolute top-[40%] right-[-15%] w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-emerald-400/10 to-teal-400/15 glow-orb" />
+      <div className="absolute top-[75%] left-[-20%] w-[550px] h-[550px] rounded-full bg-gradient-to-tr from-blue-400/15 to-indigo-500/15 glow-orb" />
       
       {/* Progress Bar */}
       <motion.div 
@@ -3693,16 +3700,18 @@ export default function App() {
           </motion.div>
 
           <motion.div 
-            className="mt-8 bg-white/90 backdrop-blur-md rounded-[28px] p-6 shadow-xl border border-pink-100 max-w-xl mx-auto flex items-center gap-4 relative overflow-hidden"
+            className="mt-8 p-1 bg-gradient-to-r from-pink-300 via-rose-300 to-red-300 rounded-[28px] shadow-xl shadow-pink-500/10 max-w-xl mx-auto overflow-hidden"
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 1.0 }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/5 via-rose-500/5 to-red-500/5 pointer-events-none" />
-            <div className="text-4xl select-none">💝</div>
-            <p className="text-left text-xs md:text-sm text-rose-950 font-bold leading-relaxed relative z-10">
-              Esta aplicación la creó tu papá con amor para que estudies y seas el mejor de todo el mundo. ❤️
-            </p>
+            <div className="bg-white/95 backdrop-blur-md rounded-[calc(28px-0.25rem)] p-6 flex items-center gap-4 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/5 via-rose-500/5 to-red-500/5 pointer-events-none" />
+              <div className="text-4xl select-none animate-bounce">💝</div>
+              <p className="text-left text-xs md:text-sm text-rose-950 font-display font-extrabold leading-relaxed relative z-10">
+                Esta aplicación la creó tu papá con amor para que estudies y seas el mejor de todo el mundo. ❤️
+              </p>
+            </div>
           </motion.div>
 
           <motion.div 
@@ -3722,19 +3731,21 @@ export default function App() {
       {/* Intro & Didactic Note */}
       <section className="py-24 px-6 md:px-12 max-w-5xl mx-auto -mt-10 relative z-20">
         <FadeIn>
-          <div className="bg-white rounded-[32px] p-8 md:p-14 shadow-2xl border border-gray-50 flex flex-col md:flex-row gap-12 items-center">
-            <div className="bg-blue-50 w-32 h-32 rounded-full flex items-center justify-center shrink-0 border-8 border-white shadow-inner">
-              <Globe2 className="text-blue-500 w-16 h-16" />
-            </div>
-            <div className="flex-1">
-              <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6 text-gray-900">
-                El Secreto del Clima
-              </h2>
-              <p className="text-lg text-gray-600 leading-relaxed mb-6 font-light">
-                ¡Explorador! No necesitamos aviones, solo curiosidad. Un pequeño secreto antes de volar: el <strong>"tiempo"</strong> es lo que pasa hoy (si llueve ahora), pero el <strong>"clima"</strong> es la personalidad de la región sostenida por años. 
-                <br /><br />
-                En este viaje interactivo, descubre cómo la luz solar da forma a la vida del planeta.
-              </p>
+          <div className="double-bezel-outer p-2.5 rounded-[40px] w-full">
+            <div className="double-bezel-inner rounded-[calc(40px-0.625rem)] p-8 md:p-14 flex flex-col md:flex-row gap-12 items-center">
+              <div className="bg-blue-50 w-32 h-32 rounded-full flex items-center justify-center shrink-0 border-8 border-white shadow-inner">
+                <Globe2 className="text-blue-500 w-16 h-16 animate-pulse" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6 text-gray-900">
+                  El Secreto del Clima
+                </h2>
+                <p className="text-lg text-gray-600 leading-relaxed mb-6 font-light">
+                  ¡Explorador! No necesitamos aviones, solo curiosidad. Un pequeño secreto antes de volar: el <strong>"tiempo"</strong> es lo que pasa hoy (si llueve ahora), pero el <strong>"clima"</strong> es la personalidad de la región sostenida por años. 
+                  <br /><br />
+                  En este viaje interactivo, descubre cómo la luz solar da forma a la vida del planeta.
+                </p>
+              </div>
             </div>
           </div>
         </FadeIn>
@@ -3796,9 +3807,11 @@ export default function App() {
           </div>
 
           <FadeIn>
-            <div className="bg-orange-50 rounded-[32px] p-8 md:p-12 border border-orange-200">
-              <h3 className="text-2xl font-serif font-bold mb-8 text-gray-900 text-center">Toca para abrir tu maleta tropical</h3>
-              <PackingInteractive />
+            <div className="double-bezel-outer p-2.5 rounded-[36px] bg-orange-100/30 border-orange-200/40">
+              <div className="double-bezel-inner rounded-[calc(36px-0.625rem)] p-8 md:p-12 bg-white/95">
+                <h3 className="text-2xl font-display font-bold mb-8 text-gray-900 text-center">Toca para abrir tu maleta tropical 🌴</h3>
+                <PackingInteractive />
+              </div>
             </div>
           </FadeIn>
         </div>
