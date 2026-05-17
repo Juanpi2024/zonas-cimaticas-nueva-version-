@@ -2821,8 +2821,7 @@ const ClimaticCrosswordGame = () => {
                         onChange={(e) => handleCellChange(r, c, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(r, c, e)}
                         onFocus={() => handleCellFocus(r, c)}
-                        translate="no"
-                        className="notranslate w-full h-full text-center bg-transparent border-none outline-none focus:ring-0 uppercase p-0 font-extrabold select-all cursor-pointer"
+                        className="w-full h-full text-center bg-transparent border-none outline-none focus:ring-0 uppercase p-0 font-extrabold select-all cursor-pointer"
                         autoComplete="off"
                         autoCorrect="off"
                         autoCapitalize="off"
@@ -3046,23 +3045,31 @@ const ClimaticWordSearchGame = () => {
 
   const handleCellClick = (r: number, c: number) => {
     soundFX.playClick();
+    
+    // Ignore if cell is already part of a found word
+    if (isCellFound(r, c)) return;
+
     if (!selectedStart) {
+      // First click: select start cell
       setSelectedStart({ r, c });
       setSelectedEnd(null);
     } else {
+      // Clicked same cell again: deselect
       if (selectedStart.r === r && selectedStart.c === c) {
         setSelectedStart(null);
         setSelectedEnd(null);
         return;
       }
 
+      // Clicked a non-aligned cell (not in same row or column):
+      // Treat this as starting a new selection from here!
       if (selectedStart.r !== r && selectedStart.c !== c) {
-        soundFX.playFailure();
-        setSelectedStart(null);
+        setSelectedStart({ r, c });
         setSelectedEnd(null);
         return;
       }
 
+      // Aligned click (same row or col):
       const minR = Math.min(selectedStart.r, r);
       const maxR = Math.max(selectedStart.r, r);
       const minC = Math.min(selectedStart.c, c);
@@ -3099,12 +3106,14 @@ const ClimaticWordSearchGame = () => {
             soundFX.playVictory();
           }, 600);
         }
+        // Successfully found: clear selection
+        setSelectedStart(null);
+        setSelectedEnd(null);
       } else {
-        soundFX.playFailure();
+        // Not a complete word match yet: update selection end so the children
+        // can see the highlighted track as they click letters sequentially!
+        setSelectedEnd({ r, c });
       }
-
-      setSelectedStart(null);
-      setSelectedEnd(null);
     }
   };
 
@@ -3184,7 +3193,7 @@ const ClimaticWordSearchGame = () => {
             </p>
           </div>
 
-          <div className="bg-rose-50/50 p-3 rounded-2xl border border-rose-100/50 w-full max-w-[440px] aspect-square grid grid-cols-11 gap-1 md:gap-1.5 touch-none select-none">
+          <div className="bg-rose-50/50 p-3 rounded-2xl border border-rose-100/50 w-full max-w-[440px] aspect-square grid grid-cols-11 gap-1 md:gap-1.5 touch-manipulation select-none">
             {GRID.map((row, rIdx) =>
               row.map((char, cIdx) => {
                 const selected = isCellSelected(rIdx, cIdx);
@@ -3194,8 +3203,7 @@ const ClimaticWordSearchGame = () => {
                     key={`${rIdx}-${cIdx}`}
                     onClick={() => handleCellClick(rIdx, cIdx)}
                     onMouseEnter={() => handleCellHover(rIdx, cIdx)}
-                    translate="no"
-                    className={`notranslate aspect-square w-full rounded-lg text-xs md:text-sm font-bold flex items-center justify-center transition-all cursor-pointer select-none active:scale-95 ${
+                    className={`aspect-square w-full rounded-lg text-xs md:text-sm font-bold flex items-center justify-center transition-all cursor-pointer select-none active:scale-95 ${
                       found
                         ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/20 font-black scale-105"
                         : selected
