@@ -205,50 +205,159 @@ const SeasonsInteractive = () => {
 };
 
 const PackingInteractive = () => {
-    const items = [
-      { id: 1, icon: <ThermometerSun/>, title: "Ropa Sugerida", desc: "Algodón muy ligero, shorts, y sandalias que permitan respirar a tu piel." },
-      { id: 2, icon: <Droplets/>, title: "Imprescindibles", desc: "Protector solar de alta potencia y abundante agua para mantener la hidratación." },
-      { id: 3, icon: <Globe2/>, title: "Qué verás", desc: "Selvas exuberantes, grandes dunas infinitas, y la mayor diversidad de insectos." }
-    ];
+  const allGear = [
+    { id: "cotton", name: "Polera de Algodón 👕", isCorrect: true, desc: "Ropa muy ligera y transpirable. ¡Es perfecta para tolerar la humedad de la selva y el calor!", packed: false },
+    { id: "shorts", name: "Shorts frescos 🩳", isCorrect: true, desc: "Pantalones cortos para que tus piernas respiren y no sientas el calor agobiante.", packed: false },
+    { id: "sandals", name: "Sandalias cómodas 🩴", isCorrect: true, desc: "Mantienen tus pies frescos. Evitan que sudes como pasaría con calzado cerrado pesado.", packed: false },
+    { id: "sunscreen", name: "Protector Solar 🧴", isCorrect: true, desc: "¡Vital! Los rayos caen directos y rectos en el ecuador, quemando la piel en minutos.", packed: false },
+    { id: "hat", name: "Gorra de Sol 🧢", isCorrect: true, desc: "Protege tu cara y tu cabeza de la radiación solar directa. ¡Evita insolaciones!", packed: false },
+    { id: "parka", name: "Parka de Plumas 🧥", isCorrect: false, desc: "¡Qué calor! Con más de 30°C y humedad extrema, te derretirías al instante.", packed: false },
+    { id: "boots", name: "Botas de Nieve 🥾", isCorrect: false, desc: "Tus pies sudarían muchísimo, te saldrían ampollas y caminarías muy incómodo.", packed: false },
+    { id: "gloves", name: "Guantes de Lana 🧤", isCorrect: false, desc: "¡Innecesario! En el trópico tus manos no necesitan abrigo alguno.", packed: false }
+  ];
 
-    const [openId, setOpenId] = useState<number | null>(null);
+  const [gearList, setGearList] = useState(allGear);
+  const [packedCount, setPackedCount] = useState(0);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedbackType, setFeedbackType] = useState<"success" | "error" | null>(null);
 
-    return (
-      <div className="grid md:grid-cols-3 gap-6">
-        {items.map((item) => (
-          <motion.div 
-            key={item.id}
-            className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md cursor-pointer border border-orange-100 flex flex-col justify-center"
-            onClick={() => setOpenId(openId === item.id ? null : item.id)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3 text-orange-600 font-bold text-lg">
-                {item.icon} {item.title}
-              </div>
-              <ChevronRight className={`text-orange-300 transition-transform ${openId === item.id ? 'rotate-90' : ''}`} />
-            </div>
-            
-            <AnimatePresence>
-              {openId === item.id && (
+  const maxCorrect = allGear.filter(g => g.isCorrect).length;
+
+  const handleEquip = (id: string) => {
+    const item = gearList.find(g => g.id === id);
+    if (!item) return;
+
+    if (item.isCorrect) {
+      if (item.packed) {
+        setGearList(prev => prev.map(g => g.id === id ? { ...g, packed: false } : g));
+        setPackedCount(prev => prev - 1);
+        setFeedback(`Te has quitado la ${item.name.split(" ")[0]}. ¡Volverá a tu mochila!`);
+        setFeedbackType("error");
+      } else {
+        setGearList(prev => prev.map(g => g.id === id ? { ...g, packed: true } : g));
+        setPackedCount(prev => prev + 1);
+        setFeedback(`¡Excelente! ${item.desc}`);
+        setFeedbackType("success");
+      }
+    } else {
+      setFeedback(`🚨 ¡Alerta de Calor Absoluto! ${item.desc}`);
+      setFeedbackType("error");
+    }
+  };
+
+  const isCompleted = packedCount === maxCorrect;
+
+  return (
+    <div className="bg-[#fffdfa] rounded-[32px] p-6 md:p-10 text-gray-900 border border-orange-200 shadow-xl relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-50/20 via-white to-white pointer-events-none"></div>
+      
+      <div className="relative z-10 grid md:grid-cols-2 gap-10 items-center">
+        <div>
+          <span className="inline-flex items-center gap-2 bg-orange-100 border border-orange-200 text-orange-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+            ☀️ Desafío Tropical
+          </span>
+          <h3 className="text-3xl font-serif font-bold mb-4 text-orange-950">
+            Prepara tu Maleta para el Trópico
+          </h3>
+          <p className="text-gray-600 font-light mb-8 leading-relaxed text-sm md:text-base">
+            ¡Viajamos a la Zona Cálida! El calor es constante y la humedad en las selvas es extrema. Selecciona solo las prendas necesarias para estar cómodo y protegido del sol directo.
+          </p>
+
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {gearList.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleEquip(item.id)}
+                className={`p-3 rounded-xl border text-left text-sm font-semibold transition-all duration-300 flex items-center justify-between cursor-pointer ${
+                  item.packed 
+                    ? "bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm"
+                    : "bg-orange-50/30 border-orange-100 text-orange-950 hover:bg-orange-50"
+                }`}
+              >
+                <span>{item.name}</span>
+                {item.packed && <span className="text-emerald-400 text-xs">✓</span>}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-20 flex items-center">
+            <AnimatePresence mode="wait">
+              {feedback && (
                 <motion.div
-                  initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                  animate={{ height: "auto", opacity: 1, marginTop: 12 }}
-                  exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                  className="overflow-hidden"
+                  key={feedback}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className={`p-4 rounded-xl border text-sm font-light leading-relaxed w-full ${
+                    feedbackType === "success"
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                      : "bg-red-50 border-red-200 text-red-800"
+                  }`}
                 >
-                  <p className="text-gray-700 font-light leading-relaxed border-t border-orange-50 pt-3">
-                    {item.desc}
-                  </p>
+                  {feedback}
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
-        ))}
+          </div>
+        </div>
+
+        {/* Suitcase Preview */}
+        <div className="relative bg-orange-50/40 rounded-2xl p-6 border border-orange-100 flex flex-col items-center justify-center min-h-[350px]">
+          <img 
+            src="./warm_clothing.png" 
+            alt="Ropa Tropical" 
+            className="w-full max-w-[280px] h-auto object-contain rounded-xl shadow-md border border-orange-100 mb-6 bg-white p-2"
+          />
+          
+          <div className="w-full">
+            <div className="flex justify-between text-xs text-orange-800 uppercase tracking-widest font-bold mb-2">
+              <span>Progreso de la Maleta:</span>
+              <span>{packedCount} de {maxCorrect} prendas</span>
+            </div>
+            
+            <div className="w-full h-3 bg-orange-100 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-gradient-to-r from-orange-400 to-yellow-300"
+                animate={{ width: `${(packedCount / maxCorrect) * 100}%` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {isCompleted && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center p-8 text-center border-2 border-emerald-500"
+              >
+                <div className="w-20 h-20 bg-emerald-100 border border-emerald-400 rounded-full flex items-center justify-center text-5xl mb-4 animate-bounce">
+                  🌴
+                </div>
+                <h4 className="text-2xl font-serif font-bold text-gray-900 mb-2">¡Mochila Tropical Lista!</h4>
+                <p className="text-emerald-800 text-sm mb-6 leading-relaxed max-w-xs font-light">
+                  ¡Excelente! Tienes todo lo indispensable para explorar la selva o el desierto sin sufrir insolaciones o exceso de calor.
+                </p>
+                <button
+                  onClick={() => {
+                    setGearList(allGear);
+                    setPackedCount(0);
+                    setFeedback(null);
+                    setFeedbackType(null);
+                  }}
+                  className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold rounded-xl text-sm transition-all cursor-pointer shadow-sm"
+                >
+                  Reiniciar Mochila
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
-    );
-}
+    </div>
+  );
+};
 
 const PolarGearInteractive = () => {
   const allGear = [
@@ -395,6 +504,161 @@ const PolarGearInteractive = () => {
                   className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-950 font-bold rounded-xl text-sm transition-all cursor-pointer"
                 >
                   Reiniciar Desafío
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TemperateGearInteractive = () => {
+  const allGear = [
+    { id: "jacket", name: "Chaqueta Ligera 🧥", isCorrect: true, desc: "Abrigo ideal para el otoño o la primavera fresca. ¡Excelente para el viento de media estación!", packed: false },
+    { id: "jeans", name: "Jeans Largos 👖", isCorrect: true, desc: "El pantalón de mezclilla es ideal para climas templados, protegiéndote sin sofocarte.", packed: false },
+    { id: "sneakers", name: "Zapatillas Cómodas 👟", isCorrect: true, desc: "Calzado cerrado para protegerte de la humedad del bosque templado u hojas húmedas.", packed: false },
+    { id: "umbrella", name: "Paraguas Compacto 🌂", isCorrect: true, desc: "¡Muy útil! Las lluvias son comunes y recurrentes a lo largo de las cuatro estaciones.", packed: false },
+    { id: "tshirt", name: "Polera Básica 👕", isCorrect: true, desc: "Esencial para usarla sola si sale el sol, o debajo de tu chaqueta ligera.", packed: false },
+    { id: "heavy_parka", name: "Parka Antártica 🧥", isCorrect: false, desc: "¡Excesivo! En la zona templada sudarías demasiado con ropa pensada para el polo.", packed: false },
+    { id: "sandals", name: "Sandalias de Playa 🩴", isCorrect: false, desc: "¡No es muy seguro! Si llueve o refresca por la tarde, tus pies se enfriarán rápido.", packed: false },
+    { id: "gloves", name: "Guantes de Nieve 🧤", isCorrect: false, desc: "Demasiado gruesos para temperaturas moderadas. No tendrías movilidad.", packed: false }
+  ];
+
+  const [gearList, setGearList] = useState(allGear);
+  const [packedCount, setPackedCount] = useState(0);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedbackType, setFeedbackType] = useState<"success" | "error" | null>(null);
+
+  const maxCorrect = allGear.filter(g => g.isCorrect).length;
+
+  const handleEquip = (id: string) => {
+    const item = gearList.find(g => g.id === id);
+    if (!item) return;
+
+    if (item.isCorrect) {
+      if (item.packed) {
+        setGearList(prev => prev.map(g => g.id === id ? { ...g, packed: false } : g));
+        setPackedCount(prev => prev - 1);
+        setFeedback(`Te has quitado la ${item.name.split(" ")[0]}. ¡Volverá a tu equipaje!`);
+        setFeedbackType("error");
+      } else {
+        setGearList(prev => prev.map(g => g.id === id ? { ...g, packed: true } : g));
+        setPackedCount(prev => prev + 1);
+        setFeedback(`¡Excelente! ${item.desc}`);
+        setFeedbackType("success");
+      }
+    } else {
+      setFeedback(`🚨 ¡Alerta de Ropa Inadecuada! ${item.desc}`);
+      setFeedbackType("error");
+    }
+  };
+
+  const isCompleted = packedCount === maxCorrect;
+
+  return (
+    <div className="bg-[#fbfcfa] rounded-[32px] p-6 md:p-10 text-gray-900 border border-teal-200 shadow-xl relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-teal-50/20 via-white to-white pointer-events-none"></div>
+      
+      <div className="relative z-10 grid md:grid-cols-2 gap-10 items-center">
+        <div>
+          <span className="inline-flex items-center gap-2 bg-teal-100 border border-teal-200 text-teal-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+            🍃 Desafío Cuatro Estaciones
+          </span>
+          <h3 className="text-3xl font-serif font-bold mb-4 text-teal-950">
+            Equípate para la Zona Templada
+          </h3>
+          <p className="text-gray-600 font-light mb-8 leading-relaxed text-sm md:text-base">
+            ¡Viajamos a la Zona Templada! Aquí el clima cambia mucho y se marcan las cuatro estaciones. La clave es vestirse en capas para adaptarse al sol y la lluvia templada.
+          </p>
+
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {gearList.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleEquip(item.id)}
+                className={`p-3 rounded-xl border text-left text-sm font-semibold transition-all duration-300 flex items-center justify-between cursor-pointer ${
+                  item.packed 
+                    ? "bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm"
+                    : "bg-teal-50/30 border-teal-100 text-teal-950 hover:bg-teal-50"
+                }`}
+              >
+                <span>{item.name}</span>
+                {item.packed && <span className="text-emerald-400 text-xs">✓</span>}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-20 flex items-center">
+            <AnimatePresence mode="wait">
+              {feedback && (
+                <motion.div
+                  key={feedback}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className={`p-4 rounded-xl border text-sm font-light leading-relaxed w-full ${
+                    feedbackType === "success"
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                      : "bg-red-50 border-red-200 text-red-800"
+                  }`}
+                >
+                  {feedback}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Suitcase Preview */}
+        <div className="relative bg-teal-50/40 rounded-2xl p-6 border border-teal-100 flex flex-col items-center justify-center min-h-[350px]">
+          <img 
+            src="./temperate_clothing.png" 
+            alt="Ropa Templada" 
+            className="w-full max-w-[280px] h-auto object-contain rounded-xl shadow-md border border-teal-100 mb-6 bg-white p-2"
+          />
+          
+          <div className="w-full">
+            <div className="flex justify-between text-xs text-teal-800 uppercase tracking-widest font-bold mb-2">
+              <span>Progreso del Equipaje:</span>
+              <span>{packedCount} de {maxCorrect} prendas</span>
+            </div>
+            
+            <div className="w-full h-3 bg-teal-100 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-gradient-to-r from-teal-400 to-emerald-300"
+                animate={{ width: `${(packedCount / maxCorrect) * 100}%` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {isCompleted && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center p-8 text-center border-2 border-emerald-500"
+              >
+                <div className="w-20 h-20 bg-emerald-100 border border-emerald-400 rounded-full flex items-center justify-center text-5xl mb-4 animate-bounce">
+                  🍂
+                </div>
+                <h4 className="text-2xl font-serif font-bold text-gray-900 mb-2">¡Equipaje Templado Listo!</h4>
+                <p className="text-emerald-800 text-sm mb-6 leading-relaxed max-w-xs font-light">
+                  ¡Excelente trabajo! Tienes la ropa perfecta para adaptarte al cambiante clima templado del bosque o los valles.
+                </p>
+                <button
+                  onClick={() => {
+                    setGearList(allGear);
+                    setPackedCount(0);
+                    setFeedback(null);
+                    setFeedbackType(null);
+                  }}
+                  className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-bold rounded-xl text-sm transition-all cursor-pointer shadow-sm"
+                >
+                  Reiniciar Equipaje
                 </button>
               </motion.div>
             )}
@@ -597,6 +861,12 @@ export default function App() {
                   ¿Sabías que el clima frío no sólo está en los polos? Al escalar, la atmósfera se vuelve más fina y retiene menos calor. ¡Subir una alta montaña es como viajar cientos de kilómetros hacia el norte, pero en vertical!
                 </p>
               </div>
+            </div>
+          </FadeIn>
+
+          <FadeIn>
+            <div className="mt-16">
+              <TemperateGearInteractive />
             </div>
           </FadeIn>
         </div>
