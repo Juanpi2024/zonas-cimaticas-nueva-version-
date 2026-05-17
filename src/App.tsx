@@ -1092,6 +1092,342 @@ const ClimaticBoardGame = () => {
   );
 };
 
+const ClimaticMemorizeGame = () => {
+  const initialCards = [
+    { id: 1, pairId: 1, name: "Desierto Cálido", emoji: "🏜️", zone: "warm", info: "Los desiertos son paisajes secos y calientes de la Zona Cálida." },
+    { id: 2, pairId: 1, name: "Cactus Adaptado", emoji: "🌵", zone: "warm", info: "Los cactus tienen espinas para almacenar agua y sobrevivir al calor del desierto." },
+    { id: 3, pairId: 2, name: "Selva Tropical", emoji: "🌴", zone: "warm", info: "Las selvas de la Zona Cálida tienen gran vegetación y lluvias frecuentes." },
+    { id: 4, pairId: 2, name: "Lluvia Tropical", emoji: "🌧️", zone: "warm", info: "La lluvia constante nutre los frondosos bosques y ríos de la selva tropical." },
+    { id: 5, pairId: 3, name: "Bosque Templado", emoji: "🌳", zone: "temperate", info: "Los bosques de la Zona Templada son el hogar de robles y animales diversos." },
+    { id: 6, pairId: 3, name: "Cuatro Estaciones", emoji: "🍂", zone: "temperate", info: "En la Zona Templada se viven intensamente el otoño, invierno, primavera y verano." },
+    { id: 7, pairId: 4, name: "Alta Montaña", emoji: "🏔️", zone: "temperate", info: "Las altas cumbres representan un clima frío azonal muy particular." },
+    { id: 8, pairId: 4, name: "Frío de Altura", emoji: "❄️", zone: "temperate", info: "A mayor altura, la atmósfera retiene menos calor y la temperatura desciende." },
+    { id: 9, pairId: 5, name: "Tundra Ártica", emoji: "🐻‍❄️", zone: "cold", info: "La tundra es el reino helado del norte donde habita el oso polar." },
+    { id: 10, pairId: 5, name: "Polo Norte", emoji: "🧊", zone: "cold", info: "El Polo Norte está compuesto de hielo marino rodeado de continentes helados." },
+    { id: 11, pairId: 6, name: "Glaciar Antártico", emoji: "🐧", zone: "cold", info: "La Antártica es un continente rocoso cubierto por un gigantesco manto de hielo." },
+    { id: 12, pairId: 6, name: "Polo Sur", emoji: "❄️", zone: "cold", info: "El Polo Sur es el desierto helado más frío, ventoso y seco de nuestro planeta." }
+  ];
+
+  const connections = {
+    1: {
+      title: "🏜️ + 🌵 Adaptación del Desierto",
+      desc: "¡Excelente! Los desiertos de la Zona Cálida son sumamente secos. Para no perder agua, los cactus tienen espinas en lugar de hojas anchas y guardan el agua dentro de sus troncos carnosos."
+    },
+    2: {
+      title: "🌴 + 🌧️ La Vida en la Selva",
+      desc: "¡Grandioso! Cerca de la línea del Ecuador hace calor todo el año y llueve casi a diario. Esto crea selvas tropicales súper húmedas llenas de árboles gigantes y miles de animales."
+    },
+    3: {
+      title: "🌳 + 🍂 El Ciclo de las Estaciones",
+      desc: "¡Perfecto! En la Zona Templada los rayos solares llegan con inclinación moderada que varía en el año, haciendo que la vegetación cambie por completo en otoño, invierno, primavera y verano."
+    },
+    4: {
+      title: "🏔️ + ❄️ Clima de Alta Montaña",
+      desc: "¡Brillante! A mayor altitud en las cordilleras, el aire se vuelve delgado y la temperatura baja drásticamente. ¡Es como viajar verticalmente a los polos fríos!"
+    },
+    5: {
+      title: "🐻‍❄️ + 🧊 El Reino del Ártico",
+      desc: "¡Excelente! El Polo Norte o Ártico es un océano cubierto por banquisa de hielo marino. Es el hogar del oso polar, que cuenta con una densa capa de grasa bajo su piel para protegerse."
+    },
+    6: {
+      title: "🐧 + ❄️ La Gélida Antártica",
+      desc: "¡Asombroso! El Polo Sur es un inmenso continente montañoso cubierto por kilómetros de glaciares. Es la zona más fría de la Tierra, donde reinan los pingüinos y las orcas."
+    }
+  };
+
+  const [cards, setCards] = useState<any[]>([]);
+  const [selected, setSelected] = useState<number[]>([]);
+  const [matched, setMatched] = useState<number[]>([]);
+  const [moves, setMoves] = useState(0);
+  const [showMatchModal, setShowMatchModal] = useState(false);
+  const [activeMatchPair, setActiveMatchPair] = useState<number | null>(null);
+  const [gameFinished, setGameFinished] = useState(false);
+
+  const shuffle = (array: any[]) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  const startNewGame = () => {
+    setCards(shuffle(initialCards.map(c => ({ ...c, flipped: false }))));
+    setSelected([]);
+    setMatched([]);
+    setMoves(0);
+    setShowMatchModal(false);
+    setActiveMatchPair(null);
+    setGameFinished(false);
+  };
+
+  React.useEffect(() => {
+    startNewGame();
+  }, []);
+
+  const handleCardClick = (index: number) => {
+    if (
+      selected.length >= 2 || 
+      selected.includes(index) || 
+      matched.includes(cards[index].pairId) ||
+      showMatchModal
+    ) return;
+
+    const newSelected = [...selected, index];
+    setSelected(newSelected);
+
+    if (newSelected.length === 2) {
+      setMoves(prev => prev + 1);
+      const firstCard = cards[newSelected[0]];
+      const secondCard = cards[newSelected[1]];
+
+      if (firstCard.pairId === secondCard.pairId) {
+        setTimeout(() => {
+          setMatched(prev => [...prev, firstCard.pairId]);
+          setActiveMatchPair(firstCard.pairId);
+          setShowMatchModal(true);
+          setSelected([]);
+          
+          if (matched.length + 1 === 6) {
+            setGameFinished(true);
+          }
+        }, 600);
+      } else {
+        setTimeout(() => {
+          setSelected([]);
+        }, 1500);
+      }
+    }
+  };
+
+  const stars = moves <= 9 ? "⭐⭐⭐" : moves <= 14 ? "⭐⭐" : "⭐";
+
+  return (
+    <div className="bg-[#f0f9ff] border border-blue-100 rounded-[32px] p-6 md:p-10 relative overflow-hidden">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8 bg-white p-6 rounded-2xl border border-blue-50 shadow-sm">
+        <div className="text-left">
+          <h3 className="text-xl md:text-2xl font-serif font-bold text-blue-950 mb-1">
+            🔍 Relaciones Climáticas de la Tierra
+          </h3>
+          <p className="text-xs text-blue-800 font-light leading-relaxed max-w-md">
+            ¡No busques dos figuras iguales! Encuentra el **paisaje** y su **elemento o adaptación** correspondiente. ¡Aprende jugando!
+          </p>
+        </div>
+
+        <div className="flex items-center gap-6">
+          <div className="text-center">
+            <span className="text-[10px] text-blue-800 uppercase tracking-widest font-extrabold block">Movimientos</span>
+            <span className="text-2xl font-black text-blue-950">{moves}</span>
+          </div>
+          <div className="text-center">
+            <span className="text-[10px] text-blue-800 uppercase tracking-widest font-extrabold block">Calificación</span>
+            <span className="text-xl tracking-wide">{stars}</span>
+          </div>
+          <button
+            onClick={startNewGame}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-all active:scale-95 cursor-pointer shadow-sm"
+          >
+            Reiniciar Juego 🔄
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4 max-w-4xl mx-auto">
+        {cards.map((card, idx) => {
+          const isSelected = selected.includes(idx);
+          const isMatched = matched.includes(card.pairId);
+          const isFlipped = isSelected || isMatched;
+
+          let zoneBorder = "border-gray-200";
+          let zoneBg = "bg-white";
+          if (isFlipped) {
+            if (card.zone === "warm") {
+              zoneBorder = "border-orange-400";
+              zoneBg = "bg-orange-50/70 text-orange-950";
+            } else if (card.zone === "temperate") {
+              zoneBorder = "border-teal-400";
+              zoneBg = "bg-teal-50/70 text-teal-950";
+            } else {
+              zoneBorder = "border-blue-400";
+              zoneBg = "bg-blue-50/70 text-blue-950";
+            }
+          }
+
+          return (
+            <div
+              key={idx}
+              onClick={() => handleCardClick(idx)}
+              className={`h-[130px] md:h-[160px] rounded-2xl border-2 cursor-pointer transition-all duration-300 transform relative flex items-center justify-center ${
+                isSelected ? "ring-4 ring-blue-300" : ""
+              } ${zoneBorder} ${zoneBg}`}
+            >
+              <div className={`absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl text-white transition-opacity duration-300 ${isFlipped ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+                <Compass className="w-8 h-8 animate-pulse mb-1 text-blue-200" />
+                <span className="text-[9px] uppercase tracking-widest font-extrabold text-blue-100">Explorar</span>
+              </div>
+
+              <div className={`absolute inset-0 flex flex-col items-center justify-center p-3 text-center transition-opacity duration-300 ${isFlipped ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+                <span className="text-4xl md:text-5xl mb-2">{card.emoji}</span>
+                <span className="text-[10px] md:text-xs font-bold leading-tight line-clamp-2">{card.name}</span>
+                <span className="text-[8px] uppercase tracking-wider opacity-60 font-semibold mt-1">
+                  {card.zone === "warm" ? "Zona Cálida" : card.zone === "temperate" ? "Zona Templada" : "Zona Fría"}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <AnimatePresence>
+        {showMatchModal && activeMatchPair !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full border border-blue-100 shadow-2xl relative text-center"
+            >
+              <div className="w-16 h-16 bg-emerald-100 border border-emerald-300 rounded-full flex items-center justify-center text-4xl mb-4 mx-auto animate-bounce">
+                🎉
+              </div>
+              <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-2 inline-block">
+                ¡Pareja Educativa Encontrada!
+              </span>
+              <h3 className="text-lg md:text-xl font-serif font-bold text-gray-900 mb-4">
+                {(connections as any)[activeMatchPair].title}
+              </h3>
+              <p className="text-gray-700 text-sm font-light leading-relaxed mb-6">
+                {(connections as any)[activeMatchPair].desc}
+              </p>
+              <button
+                onClick={() => setShowMatchModal(false)}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl shadow-sm text-sm transition-all active:scale-95 cursor-pointer"
+              >
+                Seguir Buscando Parejas 🚀
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {gameFinished && !showMatchModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-[40px] p-8 md:p-12 max-w-md w-full border-4 border-blue-400 text-center shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-50 via-white to-white pointer-events-none opacity-40"></div>
+              
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="w-20 h-20 bg-blue-100 border border-blue-300 rounded-full flex items-center justify-center text-5xl mb-4 animate-bounce">
+                  🏆
+                </div>
+                
+                <span className="bg-blue-100 border border-blue-200 text-blue-800 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+                  ¡Memoria de Explorador!
+                </span>
+
+                <h3 className="text-2xl md:text-3xl font-serif font-bold text-gray-900 mb-4 leading-tight">
+                  ¡Excelente Trabajo, Juanpi!
+                </h3>
+                
+                <p className="text-gray-600 font-light mb-6 leading-relaxed text-sm">
+                  Has completado el Memorice Climático con **{moves} movimientos** y obtuviste una calificación de **{stars}**. ¡Tus conexiones geográficas son impecables!
+                </p>
+
+                <div className="flex flex-col gap-2 w-full">
+                  <button
+                    onClick={startNewGame}
+                    className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-2xl text-sm transition-all active:scale-95 cursor-pointer shadow-md"
+                  >
+                    Volver a Jugar 🔄
+                  </button>
+                  <button
+                    onClick={() => setGameFinished(false)}
+                    className="w-full py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-2xl text-sm transition-all active:scale-95 cursor-pointer"
+                  >
+                    Cerrar y Regresar
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const ExplorerGamesHub = () => {
+  const [activeTab, setActiveTab] = useState<"board" | "memorize">("board");
+
+  return (
+    <div className="my-24 max-w-6xl mx-auto px-6 md:px-12">
+      <div className="text-center mb-10">
+        <span className="inline-flex items-center gap-2 bg-pink-100 border border-pink-200 text-pink-800 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
+          🎮 Centro de Juegos Climáticos
+        </span>
+        <h2 className="text-4xl md:text-6xl font-serif font-bold text-gray-900 mb-4">
+          Academia de Súper Exploradores
+        </h2>
+        <p className="text-gray-600 font-light max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
+          ¡Aprende y pon a prueba tu ingenio! Elige entre dos misiones interactivas diseñadas especialmente para desafiar tus conocimientos geográficos.
+        </p>
+
+        {/* Tab Selector */}
+        <div className="flex justify-center gap-4 mt-8 bg-white p-2 rounded-2xl border border-gray-200 max-w-md mx-auto shadow-sm">
+          <button
+            onClick={() => setActiveTab("board")}
+            className={`flex-1 py-3 px-6 rounded-xl font-extrabold text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 ${
+              activeTab === "board"
+                ? "bg-yellow-400 text-gray-950 shadow-md animate-pulse-subtle"
+                : "text-gray-500 hover:text-gray-950"
+            }`}
+          >
+            🎲 El Gran Tablero
+          </button>
+          <button
+            onClick={() => setActiveTab("memorize")}
+            className={`flex-1 py-3 px-6 rounded-xl font-extrabold text-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 ${
+              activeTab === "memorize"
+                ? "bg-blue-600 text-white shadow-md"
+                : "text-gray-500 hover:text-gray-950"
+            }`}
+          >
+            🃏 Memorice Relacional
+          </button>
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -15 }}
+          transition={{ duration: 0.3 }}
+        >
+          {activeTab === "board" ? <ClimaticBoardGame /> : <ClimaticMemorizeGame />}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
@@ -1372,9 +1708,7 @@ export default function App() {
         </div>
       </section>
 
-      <FadeIn>
-        <ClimaticBoardGame />
-      </FadeIn>
+      <ExplorerGamesHub />
 
       {/* Resumen Final */}
       <section className="py-32 bg-[#f5f2ed] border-t-8 border-white">
