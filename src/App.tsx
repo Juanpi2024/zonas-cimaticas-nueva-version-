@@ -2242,7 +2242,7 @@ const ExplorerGamesHub = () => {
   const [activeTab, setActiveTab] = useState<"board" | "memorize" | "dressup" | "paint">("board");
 
   return (
-    <div className="my-24 max-w-6xl mx-auto px-6 md:px-12">
+    <div id="juegos" className="my-24 max-w-6xl mx-auto px-6 md:px-12 scroll-mt-20">
       <div className="text-center mb-10">
         <span className="inline-flex items-center gap-2 bg-pink-100 border border-pink-200 text-pink-800 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
           🎮 Centro de Juegos Climáticos
@@ -2327,6 +2327,15 @@ const ExplorerGamesHub = () => {
 export default function App() {
   const { scrollYProgress } = useScroll();
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const scrollToSection = (id: string) => {
+    setMobileMenuOpen(false);
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   return (
     <div className="bg-[#f5f2ed] text-gray-900 font-sans selection:bg-orange-200 selection:text-orange-900 pb-20">
@@ -2337,8 +2346,129 @@ export default function App() {
         style={{ scaleX }}
       />
 
+      {/* Premium Sticky Navigation Header */}
+      <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/70 border-b border-slate-200/50 shadow-sm transition-all duration-300">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          {/* Logo / Title */}
+          <div 
+            onClick={() => scrollToSection("inicio")} 
+            className="flex items-center gap-2.5 cursor-pointer font-serif font-bold text-gray-900 group"
+          >
+            <div className="bg-orange-100 group-hover:bg-orange-200 text-orange-600 p-1.5 rounded-xl transition-all shadow-sm">
+              <Sun size={20} className="animate-spin-slow" />
+            </div>
+            <span className="text-sm md:text-base tracking-tight font-extrabold">
+              El Viaje del Sol <span className="text-orange-500 font-black">de Juanpi ☀️</span>
+            </span>
+          </div>
+
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1 bg-gray-50/50 p-1 rounded-full border border-gray-200/30">
+            <button
+              onClick={() => scrollToSection("inicio")}
+              className="px-4 py-2 text-xs font-bold text-gray-600 hover:text-gray-950 rounded-full hover:bg-white/80 transition-all cursor-pointer flex items-center gap-1"
+            >
+              🏠 Inicio
+            </button>
+            <button
+              onClick={() => scrollToSection("simulador")}
+              className="px-4 py-2 text-xs font-bold text-gray-600 hover:text-gray-950 rounded-full hover:bg-white/80 transition-all cursor-pointer flex items-center gap-1"
+            >
+              🧭 Simulador
+            </button>
+            <button
+              onClick={() => scrollToSection("calida")}
+              className="px-4 py-2 text-xs font-bold text-orange-700 hover:bg-orange-50 rounded-full transition-all cursor-pointer flex items-center gap-1"
+            >
+              ☀️ Cálida
+            </button>
+            <button
+              onClick={() => scrollToSection("templada")}
+              className="px-4 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 rounded-full transition-all cursor-pointer flex items-center gap-1"
+            >
+              🍃 Templada
+            </button>
+            <button
+              onClick={() => scrollToSection("fria")}
+              className="px-4 py-2 text-xs font-bold text-blue-700 hover:bg-blue-50 rounded-full transition-all cursor-pointer flex items-center gap-1"
+            >
+              ❄️ Fría
+            </button>
+            <button
+              onClick={() => scrollToSection("juegos")}
+              className="px-4 py-2 text-xs font-bold bg-pink-500 hover:bg-pink-600 text-white rounded-full transition-all cursor-pointer shadow-sm flex items-center gap-1"
+            >
+              🎮 Academia
+            </button>
+          </nav>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 text-gray-600 hover:text-gray-900 focus:outline-none cursor-pointer"
+          >
+            <div className="space-y-1.5">
+              <span className={`block w-6 h-0.5 bg-gray-600 transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} />
+              <span className={`block w-6 h-0.5 bg-gray-600 transition-all duration-300 ${mobileMenuOpen ? "opacity-0" : ""}`} />
+              <span className={`block w-6 h-0.5 bg-gray-600 transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+            </div>
+          </button>
+        </div>
+
+        {/* Mobile Menu Dropdown */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden border-t border-gray-100 bg-white shadow-xl overflow-hidden text-left"
+            >
+              <div className="p-4 space-y-2">
+                <button
+                  onClick={() => scrollToSection("inicio")}
+                  className="w-full px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl transition-all cursor-pointer flex items-center gap-2"
+                >
+                  🏠 Inicio de la Expedición
+                </button>
+                <button
+                  onClick={() => scrollToSection("simulador")}
+                  className="w-full px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl transition-all cursor-pointer flex items-center gap-2"
+                >
+                  🧭 Simulador Solar
+                </button>
+                <button
+                  onClick={() => scrollToSection("calida")}
+                  className="w-full px-4 py-3 text-sm font-bold text-orange-700 hover:bg-orange-50 rounded-xl transition-all cursor-pointer flex items-center gap-2"
+                >
+                  ☀️ Zona Cálida
+                </button>
+                <button
+                  onClick={() => scrollToSection("templada")}
+                  className="w-full px-4 py-3 text-sm font-bold text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all cursor-pointer flex items-center gap-2"
+                >
+                  🍃 Zona Templada
+                </button>
+                <button
+                  onClick={() => scrollToSection("fria")}
+                  className="w-full px-4 py-3 text-sm font-bold text-blue-700 hover:bg-blue-50 rounded-xl transition-all cursor-pointer flex items-center gap-2"
+                >
+                  ❄️ Zona Fría
+                </button>
+                <button
+                  onClick={() => scrollToSection("juegos")}
+                  className="w-full px-4 py-3.5 text-sm font-extrabold bg-pink-500 text-white rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+                >
+                  🎮 Academia de Juegos
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
+
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col items-center justify-center text-center p-8 relative overflow-hidden bg-[url('https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?auto=format&fit=crop&w=2000&q=20')] bg-cover bg-center">
+      <section id="inicio" className="min-h-screen flex flex-col items-center justify-center text-center p-8 relative overflow-hidden bg-[url('https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?auto=format&fit=crop&w=2000&q=20')] bg-cover bg-center scroll-mt-20">
         <div className="absolute inset-0 bg-white/80 backdrop-blur-sm" />
         
         <motion.div 
@@ -2418,7 +2548,7 @@ export default function App() {
       </section>
 
       {/* Punto de Partida */}
-      <section className="py-32 bg-[#1a1a1a] text-[#f5f2ed] border-y-8 border-orange-500/20">
+      <section id="simulador" className="py-32 bg-[#1a1a1a] text-[#f5f2ed] border-y-8 border-orange-500/20 scroll-mt-16">
         <div className="max-w-6xl mx-auto px-6 md:px-12">
           <FadeIn>
             <div className="inline-block px-4 py-1.5 rounded-full border border-orange-500/30 text-orange-400 text-xs font-bold uppercase tracking-widest mb-6">
@@ -2436,7 +2566,7 @@ export default function App() {
       </section>
 
       {/* Zona Calida */}
-      <section className="py-32 bg-[#fffaf5] border-b border-orange-100">
+      <section id="calida" className="py-32 bg-[#fffaf5] border-b border-orange-100 scroll-mt-16">
         <div className="max-w-6xl mx-auto px-6 md:px-12">
           <FadeIn>
             <div className="text-center mb-16">
@@ -2482,7 +2612,7 @@ export default function App() {
       </section>
 
       {/* Zona Templada */}
-      <section className="py-32 bg-[#eaf4ec]">
+      <section id="templada" className="py-32 bg-[#eaf4ec] scroll-mt-16">
         <div className="max-w-6xl mx-auto px-6 md:px-12">
           <FadeIn>
             <div className="text-center mb-16">
@@ -2526,7 +2656,7 @@ export default function App() {
       </section>
 
       {/* Zona Fría */}
-      <section className="py-32 bg-[#0a192f] text-[#e2f1f8] relative overflow-hidden">
+      <section id="fria" className="py-32 bg-[#0a192f] text-[#e2f1f8] relative overflow-hidden scroll-mt-16">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-600/20 via-[#0a192f] to-[#0a192f] pointer-events-none"></div>
         <div className="max-w-6xl mx-auto px-6 md:px-12 relative z-10">
           <FadeIn>
