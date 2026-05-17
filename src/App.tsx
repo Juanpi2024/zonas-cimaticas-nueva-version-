@@ -1316,9 +1316,13 @@ const ClimaticBoardGame = () => {
                     ¡Felicidades, Súper Explorador Juanpi!
                   </h3>
                   
-                  <p className="text-gray-600 font-light max-w-md mb-8 leading-relaxed text-sm md:text-base">
+                  <p className="text-gray-600 font-light max-w-md mb-6 leading-relaxed text-sm md:text-base">
                     Has completado el Gran Tablero Climático y recolectado todas las insignias de aprendizaje. ¡Ahora eres un experto oficial certificado en los climas de la Tierra!
                   </p>
+
+                  <div className="bg-rose-50 border border-rose-100 p-5 rounded-3xl text-rose-950 font-bold text-xs md:text-sm max-w-md mx-auto mb-8 shadow-sm">
+                    ❤️ Mensaje de tu papá: "Juanpi, ¡tu papá está demasiado orgulloso de ver cómo aprendes y avanzas paso a paso en el tablero de la vida! Eres mi gran orgullo."
+                  </div>
 
                   <div className="flex gap-2 justify-center mb-8 bg-gray-50 p-4 rounded-2xl border border-gray-100 w-full max-w-sm">
                     {questions.map((q, idx) => (
@@ -1610,9 +1614,13 @@ const ClimaticMemorizeGame = () => {
                   ¡Excelente Trabajo, Juanpi!
                 </h3>
                 
-                <p className="text-gray-600 font-light mb-6 leading-relaxed text-sm">
+                <p className="text-gray-600 font-light mb-4 leading-relaxed text-sm">
                   Has completado el Memorice Climático con **{moves} movimientos** y obtuviste una calificación de **{stars}**. ¡Tus conexiones geográficas son impecables!
                 </p>
+
+                <div className="bg-rose-50 border border-rose-100 p-4 rounded-2xl text-rose-950 font-bold text-xs max-w-sm mx-auto mb-6 shadow-sm">
+                  ❤️ Mensaje de tu papá: "¡Qué gran memoria, Juanpi! Tu papá te ama con todo el corazón y celebra cada uno de tus descubrimientos con una sonrisa gigante."
+                </div>
 
                 <div className="flex flex-col gap-2 w-full">
                   <button
@@ -2086,6 +2094,9 @@ const ClimaticDressingSimulator = () => {
                   <div className="text-emerald-800 font-semibold text-center flex flex-col items-center gap-2 py-4">
                     <span>🌟 ¡EXPEDICIÓN PERFECTA! 🌟</span>
                     <span className="font-light text-gray-700">Juanpi está excelentemente preparado para el clima. Su vestimenta y accesorios equilibran frescura, protección solar, hidratación y aislamiento térmico según amerite el destino. ¡Eres un meteorólogo de nivel doctoral!</span>
+                    <div className="mt-4 p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-950 font-bold text-xs leading-relaxed max-w-sm">
+                      ❤️ Mensaje de tu papá: "¡Maleta lista! Tu papá sabe que llegarás muy lejos en todos tus viajes y estudios. ¡Te amo infinito, campeón!"
+                    </div>
                   </div>
                 ) : (
                   <div>
@@ -2967,9 +2978,13 @@ const ClimaticCrosswordGame = () => {
                 ¡Felicidades, Súper Crucigramista Juanpi!
               </h3>
               
-              <p className="text-gray-600 font-light leading-relaxed mb-8 text-sm md:text-base">
+              <p className="text-gray-600 font-light leading-relaxed mb-6 text-sm md:text-base">
                 Has descifrado todas las palabras clave sobre las zonas climáticas de nuestro planeta. ¡Tu bitácora científica ahora brilla más que nunca!
               </p>
+
+              <div className="bg-rose-50 border border-rose-100 p-4 rounded-2xl text-rose-950 font-bold text-xs max-w-sm mx-auto mb-8 shadow-sm text-center">
+                ❤️ Mensaje de tu papá: "¡Descifraste todas las palabras, mi pequeño sabio! Tu papá te abraza muy fuerte y está inmensamente orgulloso de tu inteligencia."
+              </div>
 
               <div className="bg-purple-50 rounded-3xl p-6 border border-purple-100 text-left mb-8">
                 <h4 className="font-extrabold text-purple-950 text-sm mb-3">Bitácora de Palabras Descubiertas:</h4>
@@ -3295,9 +3310,13 @@ const ClimaticWordSearchGame = () => {
                 ¡Felicidades, Súper Descubridor Juanpi!
               </h3>
               
-              <p className="text-gray-600 font-light leading-relaxed mb-6 text-xs md:text-sm">
+              <p className="text-gray-600 font-light leading-relaxed mb-4 text-xs md:text-sm">
                 Has encontrado todas las palabras de la Tierra y sus climas en la Sopa de Letras. ¡Tus habilidades geográficas son asombrosas!
               </p>
+
+              <div className="bg-rose-50 border border-rose-100 p-4 rounded-2xl text-rose-950 font-bold text-xs max-w-sm mx-auto mb-4 shadow-sm text-center">
+                ❤️ Mensaje de tu papá: "¡Encontraste todo, Juanpi! Tu papá siempre estará aquí para apoyarte y recordarte que eres capaz de lograr todo lo que te propongas."
+              </div>
 
               <div className="bg-rose-50 rounded-3xl p-5 border border-rose-100 text-left mb-6 text-xs font-bold text-rose-900 space-y-1.5">
                 <div className="text-center font-extrabold text-sm mb-2 uppercase tracking-wide">Diploma de Súper Explorador</div>
@@ -3628,11 +3647,19 @@ export default function App() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex justify-center mb-6 text-orange-500"
+            className="flex flex-col items-center justify-center mb-6 text-orange-500 gap-3"
           >
             <div className="bg-white shadow-xl rounded-full p-4">
               <Compass size={48} className="animate-spin-slow" />
             </div>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.5, type: "spring" }}
+              className="bg-pink-500 text-white font-extrabold text-xs md:text-sm uppercase tracking-widest px-6 py-2 rounded-full shadow-lg shadow-pink-500/20 border-2 border-white animate-pulse"
+            >
+              👋 ¡Bienvenido Juanpi! 🌟
+            </motion.div>
           </motion.div>
           
           <motion.h1 
@@ -3652,6 +3679,19 @@ export default function App() {
           >
             <p className="text-xl md:text-2xl text-gray-700 font-light">
               Una Exploración interactiva por los Climas
+            </p>
+          </motion.div>
+
+          <motion.div 
+            className="mt-8 bg-white/90 backdrop-blur-md rounded-[28px] p-6 shadow-xl border border-pink-100 max-w-xl mx-auto flex items-center gap-4 relative overflow-hidden"
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 1.0 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/5 via-rose-500/5 to-red-500/5 pointer-events-none" />
+            <div className="text-4xl select-none">💝</div>
+            <p className="text-left text-xs md:text-sm text-rose-950 font-bold leading-relaxed relative z-10">
+              Esta aplicación la creó tu papá con amor para que estudies y seas el mejor de todo el mundo. ❤️
             </p>
           </motion.div>
 
